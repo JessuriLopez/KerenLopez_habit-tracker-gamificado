@@ -18,4 +18,13 @@ public class HabitoRepository : IHabitoRepository
     {
         return await _context.HabitosGlobales.ToListAsync();
     }
+
+    public async Task<HabitoGlobal> AddAsync(HabitoGlobal habito)
+    {
+        await _context.HabitosGlobales.AddAsync(habito);
+
+        await _context.SaveChangesAsync();
+
+        return habito;
+    }
 }
