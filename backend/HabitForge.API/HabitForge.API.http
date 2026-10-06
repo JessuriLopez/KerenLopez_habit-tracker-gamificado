@@ -9,3 +9,18 @@ Content-Type: application/json
 {
   "nombre": "Ir"
 }
+
+### Consultar un hábito por ID
+GET http://localhost:5020/api/habitos/4
+Accept: application/json
+
+### Actualizar un hábito por ID
+PUT http://localhost:5020/api/habitos/4
+Content-Type: application/json
+
+{
+  "nombre": "Hacer ejercicio diariamente"
+}
+
+### Eliminar un hábito por ID
+DELETE http://localhost:5020/api/habitos/4
