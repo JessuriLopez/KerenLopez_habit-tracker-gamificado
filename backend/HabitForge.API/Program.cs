@@ -1,7 +1,17 @@
+using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
+using HabitForge.Infrastructure.Data;
 var builder = WebApplication.CreateBuilder(args);
-
+Env.Load();
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
+var connectionString =
+    Environment.GetEnvironmentVariable("ConnectionStrings__PostgresConnection");
+
+builder.Services.AddDbContext<HabitForgeDbContext>(options =>
+    options.UseNpgsql(connectionString));
+    
 builder.Services.AddOpenApi();
 
 var app = builder.Build();

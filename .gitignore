@@ -1,0 +1,12 @@
+# Variables de entorno / secretos
+*.env
+
+# Archivos generados por .NET
+**/bin/
+**/obj/
+
+# Visual Studio
+.vs/
+
+# VS Code local
+.vscode/
