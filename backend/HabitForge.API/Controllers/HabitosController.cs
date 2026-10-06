@@ -1,6 +1,8 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using HabitForge.Application.Interfaces;
 using HabitForge.Domain.Entities;
+using HabitForge.Application.Features.Habitos.DTOs;
 
 namespace HabitForge.API.Controllers;
 
@@ -9,10 +11,14 @@ namespace HabitForge.API.Controllers;
 public class HabitosController : ControllerBase
 {
     private readonly IHabitoRepository _repository;
+    private readonly IValidator<CreateHabitoRequestDto> _validator;
 
-    public HabitosController(IHabitoRepository repository)
+    public HabitosController(
+        IHabitoRepository repository,
+        IValidator<CreateHabitoRequestDto> validator)
     {
         _repository = repository;
+        _validator = validator;
     }
 
     [HttpGet]
@@ -20,22 +26,42 @@ public class HabitosController : ControllerBase
     {
         var habitos = await _repository.GetAllAsync();
 
-        return Ok(habitos);
+        var response = habitos.Select(h => new HabitoResponseDto
+        {
+            Id = h.Id,
+            Nombre = h.Nombre
+        });
+
+        return Ok(response);
     }
 
     [HttpPost]
-    public async Task<IActionResult> CrearHabito([FromBody] HabitoGlobal habito)
+    public async Task<IActionResult> CrearHabito(
+        [FromBody] CreateHabitoRequestDto request)
     {
-        if (string.IsNullOrWhiteSpace(habito.Nombre))
+        var validationResult = await _validator.ValidateAsync(request);
+
+        if (!validationResult.IsValid)
         {
-            return BadRequest("El nombre del hábito es obligatorio.");
+            return BadRequest(validationResult.Errors);
         }
 
-        var nuevoHabito = await _repository.AddAsync(habito);
+        var nuevoHabito = new HabitoGlobal
+        {
+            Nombre = request.Nombre
+        };
+
+        var habitoCreado = await _repository.AddAsync(nuevoHabito);
+
+        var response = new HabitoResponseDto
+        {
+            Id = habitoCreado.Id,
+            Nombre = habitoCreado.Nombre
+        };
 
         return CreatedAtAction(
             nameof(GetHabitos),
-            new { id = nuevoHabito.Id },
-            nuevoHabito);
+            new { id = response.Id },
+            response);
     }
 }

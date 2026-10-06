@@ -2,10 +2,10 @@
 GET http://localhost:5020/api/habitos
 Accept: application/json
 
-### 2. Crear un nuevo hábito (Prueba del Verbo POST)
+### 3. Probar validación con un nombre demasiado corto
 POST http://localhost:5020/api/habitos
 Content-Type: application/json
 
 {
-  "nombre": "Estudiar Arquitectura Limpia y Event Sourcing"
+  "nombre": "Ir"
 }
