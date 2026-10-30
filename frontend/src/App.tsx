@@ -1,30 +1,115 @@
 
-import './App.css'
 import { HabitoGlobalCard } from './components/HabitoGlobalCard'
 
 function App() {
   return (
-    <main>
-      <h1>Catálogo Global de Hábitos</h1>
-      <p>Explora los hábitos disponibles en nuestra base de datos.</p>
+    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col md:flex-row">
 
-      <section className="habits-container">
-        <HabitoGlobalCard
-          id={1}
-          nombre="Beber 2 Litros de Agua"
-        />
+      {/* 1. MENÚ LATERAL: visible en escritorio */}
+      <aside className="hidden md:flex md:w-64 md:flex-col bg-slate-950 border-r border-slate-800 justify-between p-5 shrink-0">
+        <div>
+          {/* Identidad de HabitForge */}
+          <div className="flex items-center gap-3 mb-8 px-2">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white shadow">
+              HF
+            </div>
+            <span className="text-xl font-bold tracking-tight text-white">
+              HabitForge
+            </span>
+          </div>
 
-        <HabitoGlobalCard
-          id={2}
-          nombre="Hacer 30 minutos de ejercicio"
-        />
+          {/* Navegación */}
+          <nav className="space-y-2">
+            <a
+              href="#"
+              className="flex items-center gap-3 px-3 py-2.5 bg-indigo-600/15 text-indigo-400 rounded-lg font-medium text-sm border border-indigo-500/20"
+            >
+              <span>🌐</span> Catálogo Global
+            </a>
 
-        <HabitoGlobalCard
-          id={3}
-          nombre="Leer 10 páginas de un libro"
-        />
-      </section>
-    </main>
+            <span className="flex items-center gap-3 px-3 py-2.5 text-slate-500 rounded-lg font-medium text-sm cursor-not-allowed">
+              <span>📈</span> Mis Hábitos (Unidad 3)
+            </span>
+
+            <span className="flex items-center gap-3 px-3 py-2.5 text-slate-500 rounded-lg font-medium text-sm cursor-not-allowed">
+              <span>📊</span> Progreso (Unidad 3)
+            </span>
+          </nav>
+        </div>
+
+        {/* Estado de seguridad */}
+        <div className="p-3.5 bg-slate-900 rounded-xl border border-slate-800">
+          <p className="text-xs text-slate-400 mb-1">
+            Estado de Seguridad
+          </p>
+          <p className="text-sm font-semibold text-amber-400">
+            👤 Modo Invitado
+          </p>
+        </div>
+      </aside>
+
+      {/* 2. CABECERA PARA CELULARES */}
+      <header className="md:hidden bg-slate-950 border-b border-slate-800 p-4 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-md bg-indigo-600 flex items-center justify-center font-bold text-sm text-white">
+            HF
+          </div>
+          <span className="font-bold text-lg text-white">
+            HabitForge
+          </span>
+        </div>
+
+        <span className="text-xs bg-amber-500/10 text-amber-400 px-2.5 py-1 rounded-md border border-amber-500/20 font-medium">
+          👤 Invitado
+        </span>
+      </header>
+
+      {/* 3. CONTENIDO PRINCIPAL */}
+      <main className="flex-1 min-w-0 p-6 md:p-10 overflow-y-auto">
+
+        {/* Título y botón principal */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 mb-8 border-b border-slate-800">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-white">
+              Catálogo Global de Hábitos
+            </h1>
+
+            <p className="text-slate-400 text-sm mt-1">
+              Explora los hábitos maestros registrados en la tabla{' '}
+              <code className="text-indigo-400 font-mono">
+                HabitosGlobales
+              </code>.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-4 py-2.5 rounded-lg transition-colors shadow-sm self-start sm:self-auto cursor-pointer"
+          >
+            + Nuevo Hábito Global
+          </button>
+        </div>
+
+        {/* 4. TARJETAS RESPONSIVAS */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <HabitoGlobalCard
+            id={1}
+            nombre="Beber 2 Litros de Agua"
+          />
+
+          <HabitoGlobalCard
+            id={2}
+            nombre="Hacer 30 minutos de ejercicio"
+          />
+
+          <HabitoGlobalCard
+            id={3}
+            nombre="Leer 10 páginas de arquitectura de software"
+          />
+        </section>
+
+      </main>
+    </div>
   )
 }
 
