@@ -1,5 +1,5 @@
 
-interface HabitoGlobalProps {
+export interface HabitoGlobalProps {
   id: number;
   nombre: string;
 }

@@ -1,7 +1,42 @@
 
-import { HabitoGlobalCard } from './components/HabitoGlobalCard'
+import { useState, useEffect } from 'react'
+import { HabitoGlobalCard, type HabitoGlobalProps } from './components/HabitoGlobalCard'
 
 function App() {
+  
+  // Estado de los hábitos
+  const [habitos, setHabitos] = useState<HabitoGlobalProps[]>([])
+
+  // Estado de carga
+  const [cargando, setCargando] = useState<boolean>(true)
+
+  // Estado del buscador
+  const [busqueda, setBusqueda] = useState<string>('')
+
+  // Simulamos la llegada de datos desde el servidor
+  useEffect(() => {
+    const temporizador = setTimeout(() => {
+      const datosSimuladosBD: HabitoGlobalProps[] = [
+        { id: 1, nombre: 'Beber 2 Litros de Agua' },
+        { id: 2, nombre: 'Hacer 30 minutos de ejercicio cardiovascular' },
+        { id: 3, nombre: 'Leer 10 páginas de arquitectura de software' },
+        { id: 4, nombre: 'Practicar algoritmos en C# durante 45 minutos' },
+        { id: 5, nombre: 'Dormir 8 horas completas sin pantallas' },
+        { id: 6, nombre: 'Documentar avances del sprint en el repositorio' },
+      ]
+
+      setHabitos(datosSimuladosBD)
+      setCargando(false)
+    }, 1200)
+
+    return () => clearTimeout(temporizador)
+  }, [])
+
+  // Filtrar los hábitos por nombre
+  const habitosFiltrados = habitos.filter((habito) =>
+    habito.nombre.toLowerCase().includes(busqueda.toLowerCase())
+  )
+
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col md:flex-row">
 
@@ -22,9 +57,15 @@ function App() {
           <nav className="space-y-2">
             <a
               href="#"
-              className="flex items-center gap-3 px-3 py-2.5 bg-indigo-600/15 text-indigo-400 rounded-lg font-medium text-sm border border-indigo-500/20"
+              className="flex items-center justify-between px-3 py-2.5 bg-indigo-600/15 text-indigo-400 rounded-lg font-medium text-sm border border-indigo-500/20"
             >
-              <span>🌐</span> Catálogo Global
+              <span className="flex items-center gap-3">
+                <span>🌐</span> Catálogo Global
+              </span>
+
+              <span className="bg-indigo-500/20 text-indigo-300 text-xs px-2 py-0.5 rounded-full">
+                {habitos.length}
+              </span>
             </a>
 
             <span className="flex items-center gap-3 px-3 py-2.5 text-slate-500 rounded-lg font-medium text-sm cursor-not-allowed">
@@ -89,24 +130,48 @@ function App() {
             + Nuevo Hábito Global
           </button>
         </div>
+        {/* Buscador reactivo */}
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <input
+            type="text"
+            placeholder="🔍 Filtrar hábitos en el catálogo..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            className="w-full sm:max-w-md bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+          />
+
+          <span className="text-xs text-slate-400">
+            Mostrando{' '}
+            <strong className="text-white">
+              {habitosFiltrados.length}
+            </strong>{' '}
+            de {habitos.length} registros en memoria
+          </span>
+        </div>
+
 
         {/* 4. TARJETAS RESPONSIVAS */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <HabitoGlobalCard
-            id={1}
-            nombre="Beber 2 Litros de Agua"
-          />
+        {cargando ? (
+          <div className="bg-slate-800/50 border border-slate-800 rounded-xl p-12 text-center">
+            <p className="text-indigo-400 font-semibold animate-pulse text-lg">
+              ⏳ Sincronizando catálogo desde el Almacén de Estado...
+            </p>
+            <p className="text-slate-500 text-xs mt-2">
+              Ejecutando montaje inicial y useEffect
+            </p>
+          </div>
+        ) : (
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {habitosFiltrados.map((habito) => (
+              <HabitoGlobalCard
+                key={habito.id}
+                id={habito.id}
+                nombre={habito.nombre}
+              />
+            ))}
+          </section>
+        )}
 
-          <HabitoGlobalCard
-            id={2}
-            nombre="Hacer 30 minutos de ejercicio"
-          />
-
-          <HabitoGlobalCard
-            id={3}
-            nombre="Leer 10 páginas de arquitectura de software"
-          />
-        </section>
 
       </main>
     </div>
