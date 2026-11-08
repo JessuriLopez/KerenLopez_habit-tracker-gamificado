@@ -6,17 +6,33 @@ import { HabitoGlobalCard } from './HabitoGlobalCard'
 
 export function CatalogoHabitosView() {
   // Estados del módulo
-  const [habitos, setHabitos] = useState<HabitoGlobal[]>([])
-  const [cargando, setCargando] = useState<boolean>(true)
-  const [busqueda, setBusqueda] = useState<string>('')
+
+const [habitos, setHabitos] = useState<HabitoGlobal[]>([])
+const [cargando, setCargando] = useState<boolean>(true)
+const [errorRed, setErrorRed] = useState<string | null>(null)
+const [busqueda, setBusqueda] = useState<string>('')
+
 
   // Obtener los hábitos desde la capa de servicios
+
   useEffect(() => {
-    obtenerHabitosGlobalesAsync().then((datos) => {
-      setHabitos(datos)
-      setCargando(false)
-    })
+    obtenerHabitosGlobalesAsync()
+      .then((datosDesdePostgres) => {
+        setHabitos(datosDesdePostgres)
+        setErrorRed(null)
+      })
+      .catch((error) => {
+        console.error('Fallo en la comunicación HTTP con .NET:', error)
+
+        setErrorRed(
+          'No fue posible comunicarse con la API .NET. Revisa la consola del navegador (F12), el estado del backend y la configuración CORS.'
+        )
+      })
+      .finally(() => {
+        setCargando(false)
+      })
   }, [])
+
 
   // Filtrar hábitos por nombre
   const habitosFiltrados = habitos.filter((habito) =>
@@ -67,14 +83,31 @@ export function CatalogoHabitosView() {
         </span>
       </div>
 
-      {/* Mostrar carga o tarjetas */}
-      {cargando ? (
+      
+      {/* 1. Pantalla de carga */}
+      {cargando && (
         <div className="bg-slate-800/50 border border-slate-800 rounded-xl p-12 text-center">
           <p className="text-indigo-400 font-semibold animate-pulse text-lg">
-            ⏳ Consultando capa de servicios (habitosApi.ts)...
+            ⏳ Consultando endpoint GET /api/habitos en .NET...
           </p>
         </div>
-      ) : (
+      )}
+
+      {/* 2. Pantalla de error */}
+      {!cargando && errorRed && (
+        <div className="bg-red-950/40 border border-red-500/40 rounded-xl p-6 text-center">
+          <p className="text-red-400 font-bold text-base mb-1">
+            🚨 Error de Comunicación Full-Stack
+          </p>
+
+          <p className="text-slate-300 text-sm">
+            {errorRed}
+          </p>
+        </div>
+      )}
+
+      {/* 3. Tarjetas de hábitos */}
+      {!cargando && !errorRed && (
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {habitosFiltrados.map((habito) => (
             <HabitoGlobalCard
@@ -85,6 +118,7 @@ export function CatalogoHabitosView() {
           ))}
         </section>
       )}
+
     </div>
   )
 }
