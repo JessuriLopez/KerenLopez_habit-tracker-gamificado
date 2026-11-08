@@ -107,3 +107,9 @@ export const extraerMensajeErrorBackend = (error: unknown): string => {
     ? error.message
     : 'Error inesperado en la aplicación.'
 }
+
+export const eliminarHabitoGlobalAsync = async (
+  id: number
+): Promise<void> => {
+  await apiClient.delete(`/habitos/${id}`)
+}

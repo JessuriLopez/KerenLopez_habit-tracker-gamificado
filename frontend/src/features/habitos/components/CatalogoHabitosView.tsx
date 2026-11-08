@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import type { HabitoGlobal } from '../types/habito.types'
 import {
   obtenerHabitosGlobalesAsync,
+  eliminarHabitoGlobalAsync,
   extraerMensajeErrorBackend,
 } from '../api/habitosApi'
 import { HabitoGlobalCard } from './HabitoGlobalCard'
@@ -12,8 +13,10 @@ export function CatalogoHabitosView() {
   const [habitos, setHabitos] = useState<HabitoGlobal[]>([])
   const [cargando, setCargando] = useState<boolean>(true)
   const [errorRed, setErrorRed] = useState<string | null>(null)
+  const [errorEliminacion, setErrorEliminacion] = useState<string | null>(null)
   const [busqueda, setBusqueda] = useState<string>('')
   const [mostrarFormulario, setMostrarFormulario] = useState<boolean>(false)
+  const [idEliminando, setIdEliminando] = useState<number | null>(null)
 
   useEffect(() => {
     obtenerHabitosGlobalesAsync()
@@ -30,7 +33,7 @@ export function CatalogoHabitosView() {
       })
   }, [])
 
-  // Agregamos el nuevo hábito sin modificar el arreglo original
+  // Crear hábito y actualizar el catálogo sin recargar
   const manejarHabitoCreado = (nuevoHabitoDesdeBD: HabitoGlobal) => {
     setHabitos((habitosActuales) => [
       ...habitosActuales,
@@ -38,6 +41,41 @@ export function CatalogoHabitosView() {
     ])
 
     setMostrarFormulario(false)
+  }
+
+  // Eliminar un hábito mediante DELETE en .NET
+  const manejarEliminarHabito = async (id: number) => {
+    if (idEliminando !== null) return
+
+    const habito = habitos.find((item) => item.id === id)
+
+    if (!habito) return
+
+    const confirmado = window.confirm(
+      `¿Estás seguro de que deseas eliminar el hábito "${habito.nombre}"?\n\nEsta acción eliminará el registro de PostgreSQL.`
+    )
+
+    if (!confirmado) return
+
+    try {
+      setErrorEliminacion(null)
+      setIdEliminando(id)
+
+      // Esperamos que .NET confirme la eliminación
+      await eliminarHabitoGlobalAsync(id)
+
+      // Actualizamos React sin modificar el arreglo original
+      setHabitos((habitosActuales) =>
+        habitosActuales.filter((item) => item.id !== id)
+      )
+
+    } catch (error) {
+      console.error('Error al eliminar el hábito:', error)
+      setErrorEliminacion(extraerMensajeErrorBackend(error))
+
+    } finally {
+      setIdEliminando(null)
+    }
   }
 
   const habitosFiltrados = habitos.filter((habito) =>
@@ -97,6 +135,22 @@ export function CatalogoHabitosView() {
         </span>
       </div>
 
+      {/* Error de eliminación */}
+      {errorEliminacion && (
+        <div
+          role="alert"
+          className="mb-6 bg-red-950/40 border border-red-500/40 rounded-xl p-4"
+        >
+          <p className="text-red-400 font-semibold text-sm">
+            🚨 No se pudo eliminar el hábito
+          </p>
+
+          <p className="text-slate-300 text-sm mt-1">
+            {errorEliminacion}
+          </p>
+        </div>
+      )}
+
       {/* Pantalla de carga */}
       {cargando && (
         <div className="bg-slate-800/50 border border-slate-800 rounded-xl p-12 text-center">
@@ -106,7 +160,7 @@ export function CatalogoHabitosView() {
         </div>
       )}
 
-      {/* Pantalla de error */}
+      {/* Pantalla de error de conexión */}
       {!cargando && errorRed && (
         <div className="bg-red-950/40 border border-red-500/40 rounded-xl p-6 text-center">
           <p className="text-red-400 font-bold text-base mb-1">
@@ -127,6 +181,8 @@ export function CatalogoHabitosView() {
               key={habito.id}
               id={habito.id}
               nombre={habito.nombre}
+              onEliminar={manejarEliminarHabito}
+              eliminando={idEliminando !== null}
             />
           ))}
         </section>
