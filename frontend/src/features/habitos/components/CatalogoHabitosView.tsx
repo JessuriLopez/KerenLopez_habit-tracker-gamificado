@@ -1,19 +1,19 @@
 
 import { useState, useEffect } from 'react'
 import type { HabitoGlobal } from '../types/habito.types'
-import { obtenerHabitosGlobalesAsync } from '../api/habitosApi'
+import {
+  obtenerHabitosGlobalesAsync,
+  extraerMensajeErrorBackend,
+} from '../api/habitosApi'
 import { HabitoGlobalCard } from './HabitoGlobalCard'
+import { CrearHabitoForm } from './CrearHabitoForm'
 
 export function CatalogoHabitosView() {
-  // Estados del módulo
-
-const [habitos, setHabitos] = useState<HabitoGlobal[]>([])
-const [cargando, setCargando] = useState<boolean>(true)
-const [errorRed, setErrorRed] = useState<string | null>(null)
-const [busqueda, setBusqueda] = useState<string>('')
-
-
-  // Obtener los hábitos desde la capa de servicios
+  const [habitos, setHabitos] = useState<HabitoGlobal[]>([])
+  const [cargando, setCargando] = useState<boolean>(true)
+  const [errorRed, setErrorRed] = useState<string | null>(null)
+  const [busqueda, setBusqueda] = useState<string>('')
+  const [mostrarFormulario, setMostrarFormulario] = useState<boolean>(false)
 
   useEffect(() => {
     obtenerHabitosGlobalesAsync()
@@ -22,26 +22,30 @@ const [busqueda, setBusqueda] = useState<string>('')
         setErrorRed(null)
       })
       .catch((error) => {
-        console.error('Fallo en la comunicación HTTP con .NET:', error)
-
-        setErrorRed(
-          'No fue posible comunicarse con la API .NET. Revisa la consola del navegador (F12), el estado del backend y la configuración CORS.'
-        )
+        console.error('Error en la petición HTTP:', error)
+        setErrorRed(extraerMensajeErrorBackend(error))
       })
       .finally(() => {
         setCargando(false)
       })
   }, [])
 
+  // Agregamos el nuevo hábito sin modificar el arreglo original
+  const manejarHabitoCreado = (nuevoHabitoDesdeBD: HabitoGlobal) => {
+    setHabitos((habitosActuales) => [
+      ...habitosActuales,
+      nuevoHabitoDesdeBD,
+    ])
 
-  // Filtrar hábitos por nombre
+    setMostrarFormulario(false)
+  }
+
   const habitosFiltrados = habitos.filter((habito) =>
     habito.nombre.toLowerCase().includes(busqueda.toLowerCase())
   )
 
   return (
     <div>
-      {/* Encabezado del catálogo */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 mb-6 border-b border-slate-800">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-white">
@@ -49,26 +53,36 @@ const [busqueda, setBusqueda] = useState<string>('')
           </h1>
 
           <p className="text-slate-400 text-sm mt-1">
-            Módulo desacoplado bajo arquitectura{' '}
+            Conectado vía HTTP/CORS con{' '}
             <code className="text-indigo-400 font-mono">
-              Vertical Slicing
+              PostgreSQL
             </code>.
           </p>
         </div>
 
-        <button
-          type="button"
-          className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-4 py-2.5 rounded-lg transition-colors shadow-sm self-start sm:self-auto cursor-pointer"
-        >
-          + Nuevo Hábito Global
-        </button>
+        {!mostrarFormulario && (
+          <button
+            onClick={() => setMostrarFormulario(true)}
+            className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-4 py-2.5 rounded-lg transition-colors shadow-sm self-start sm:self-auto cursor-pointer"
+          >
+            + Nuevo Hábito Global
+          </button>
+        )}
       </div>
 
-      {/* Buscador reactivo */}
+      {/* Formulario para crear hábitos */}
+      {mostrarFormulario && (
+        <CrearHabitoForm
+          onHabitoCreado={manejarHabitoCreado}
+          onCancelar={() => setMostrarFormulario(false)}
+        />
+      )}
+
+      {/* Buscador */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <input
           type="text"
-          placeholder="🔍 Filtrar hábitos en el catálogo..."
+          placeholder="🔍 Filtrar hábitos provenientes de PostgreSQL..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
           className="w-full sm:max-w-md bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
@@ -79,12 +93,11 @@ const [busqueda, setBusqueda] = useState<string>('')
           <strong className="text-white">
             {habitosFiltrados.length}
           </strong>{' '}
-          de {habitos.length} registros
+          de {habitos.length} registros en BD
         </span>
       </div>
 
-      
-      {/* 1. Pantalla de carga */}
+      {/* Pantalla de carga */}
       {cargando && (
         <div className="bg-slate-800/50 border border-slate-800 rounded-xl p-12 text-center">
           <p className="text-indigo-400 font-semibold animate-pulse text-lg">
@@ -93,7 +106,7 @@ const [busqueda, setBusqueda] = useState<string>('')
         </div>
       )}
 
-      {/* 2. Pantalla de error */}
+      {/* Pantalla de error */}
       {!cargando && errorRed && (
         <div className="bg-red-950/40 border border-red-500/40 rounded-xl p-6 text-center">
           <p className="text-red-400 font-bold text-base mb-1">
@@ -106,7 +119,7 @@ const [busqueda, setBusqueda] = useState<string>('')
         </div>
       )}
 
-      {/* 3. Tarjetas de hábitos */}
+      {/* Tarjetas de hábitos */}
       {!cargando && !errorRed && (
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {habitosFiltrados.map((habito) => (
@@ -118,7 +131,6 @@ const [busqueda, setBusqueda] = useState<string>('')
           ))}
         </section>
       )}
-
     </div>
   )
 }
