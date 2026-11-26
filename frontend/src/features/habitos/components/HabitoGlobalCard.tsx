@@ -6,6 +6,10 @@ interface HabitoGlobalCardProps extends HabitoGlobal {
   onEditar?: () => void
   onEliminar?: (id: number) => void
   eliminando?: boolean
+  onCompletar?: () => void
+  completado?: boolean
+  completando?: boolean
+  cumplimientoDeshabilitado?: boolean
 }
 
 export function HabitoGlobalCard({
@@ -14,6 +18,10 @@ export function HabitoGlobalCard({
   onEditar,
   onEliminar,
   eliminando = false,
+  onCompletar,
+  completado = false,
+  completando = false,
+  cumplimientoDeshabilitado = false,
 }: HabitoGlobalCardProps) {
   return (
     <article className="bg-slate-800 border border-slate-700 rounded-xl p-5 flex flex-col justify-between hover:border-indigo-500 transition-colors shadow-sm">
@@ -33,6 +41,18 @@ export function HabitoGlobalCard({
           {nombre}
         </h3>
       </div>
+
+      {onCompletar && (
+        <Button
+          onClick={onCompletar}
+          disabled={completado || cumplimientoDeshabilitado}
+          className={completado
+            ? 'w-full bg-emerald-950/60 px-4 text-emerald-300 disabled:cursor-not-allowed'
+            : 'w-full bg-indigo-600 px-4 text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50'}
+        >
+          {completado ? '✓ Completado hoy' : completando ? 'Registrando…' : 'Completado'}
+        </Button>
+      )}
 
       {onEditar && onEliminar && <div className="flex flex-col gap-2">
         <Button onClick={onEditar} disabled={eliminando} className="w-full bg-slate-700 px-4 text-white hover:bg-slate-600 disabled:opacity-50">

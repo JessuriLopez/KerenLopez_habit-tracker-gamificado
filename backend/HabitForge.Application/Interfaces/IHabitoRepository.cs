@@ -12,5 +12,5 @@ public interface IHabitoRepository
 
     Task UpdateAsync(HabitoGlobal habito);
 
-    Task DeleteAsync(HabitoGlobal habito);
+    Task<bool> IntentarEliminarAsync(HabitoGlobal habito);
 }

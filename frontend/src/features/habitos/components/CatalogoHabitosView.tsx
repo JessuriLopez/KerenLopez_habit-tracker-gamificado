@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '../../../components/Button'
+import { useCheckIns } from '../../checkins/hooks/useCheckIns'
 import { useCatalogoHabitos } from '../hooks/useCatalogoHabitos'
 import type { HabitoGlobal } from '../types/habito.types'
 import { HabitoGlobalCard } from './HabitoGlobalCard'
@@ -20,6 +21,7 @@ export function CatalogoHabitosView({ token, puedeAdministrar }: CatalogoHabitos
     guardarHabito,
     manejarEliminarHabito,
   } = useCatalogoHabitos(token)
+  const checkIns = useCheckIns(puedeAdministrar ? null : token)
   const [busqueda, setBusqueda] = useState('')
   const [formulario, setFormulario] = useState<'nuevo' | HabitoGlobal | null>(null)
   const habitoEditado = formulario === 'nuevo' ? null : formulario
@@ -125,6 +127,20 @@ export function CatalogoHabitosView({ token, puedeAdministrar }: CatalogoHabitos
         </div>
       )}
 
+      {checkIns.errorConsulta && (
+        <div role="alert" className="mb-6 rounded-xl border border-red-500/40 bg-red-950/40 p-4 text-sm text-red-300">
+          No se pudo consultar el cumplimiento de hoy.
+          <Button onClick={checkIns.refrescar} className="ml-3 px-3 text-indigo-300 hover:bg-slate-700">
+            Volver a intentar
+          </Button>
+        </div>
+      )}
+      {checkIns.errorRegistro && (
+        <p role="alert" className="mb-6 rounded-xl border border-red-500/40 bg-red-950/40 p-4 text-sm text-red-300">
+          No se pudo registrar el cumplimiento. Vuelva a intentarlo.
+        </p>
+      )}
+
       {/* Tarjetas de hábitos */}
       {!cargando && !errorRed && (
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -136,6 +152,10 @@ export function CatalogoHabitosView({ token, puedeAdministrar }: CatalogoHabitos
               onEditar={puedeAdministrar && !formulario ? () => setFormulario(habito) : undefined}
               onEliminar={puedeAdministrar && !formulario ? manejarEliminarHabito : undefined}
               eliminando={idEliminando !== null}
+              onCompletar={!puedeAdministrar ? () => checkIns.completar(habito.id) : undefined}
+              completado={checkIns.estado?.habitosCompletados.includes(habito.id)}
+              completando={checkIns.idRegistrando === habito.id}
+              cumplimientoDeshabilitado={!checkIns.estado || checkIns.idRegistrando !== null}
             />
           ))}
         </section>

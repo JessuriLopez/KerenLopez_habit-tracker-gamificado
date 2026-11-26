@@ -12,9 +12,11 @@ public class HabitForgeDbContext : DbContext
 
     public DbSet<HabitoGlobal> HabitosGlobales { get; set; }
     public DbSet<Usuario> Usuarios { get; set; }
+    public DbSet<CumplimientoDiario> CumplimientosDiarios { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new UsuarioConfiguration());
+        modelBuilder.ApplyConfiguration(new CumplimientoDiarioConfiguration());
     }
 }

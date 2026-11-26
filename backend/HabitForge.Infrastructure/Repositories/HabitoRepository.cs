@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using HabitForge.Application.Interfaces;
 using HabitForge.Domain.Entities;
 using HabitForge.Infrastructure.Data;
+using Npgsql;
 
 namespace HabitForge.Infrastructure.Repositories;
 
@@ -39,9 +40,19 @@ public class HabitoRepository : IHabitoRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(HabitoGlobal habito)
+    public async Task<bool> IntentarEliminarAsync(HabitoGlobal habito)
     {
         _context.HabitosGlobales.Remove(habito);
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (DbUpdateException error) when (error.InnerException is PostgresException
+            { SqlState: PostgresErrorCodes.ForeignKeyViolation, ConstraintName: CumplimientoDiarioConfiguration.ClaveHabito })
+        {
+            _context.Entry(habito).State = EntityState.Detached;
+            return false;
+        }
     }
 }

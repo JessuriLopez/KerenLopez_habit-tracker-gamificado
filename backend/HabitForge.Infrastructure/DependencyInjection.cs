@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using HabitForge.Application.Interfaces;
+using HabitForge.Application.Features.CheckIns;
 using HabitForge.Domain.Entities;
 using HabitForge.Infrastructure.Data;
 using HabitForge.Infrastructure.Repositories;
@@ -20,6 +21,7 @@ public static class DependencyInjection
 
         services.AddScoped<IHabitoRepository, HabitoRepository>();
         services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+        services.AddScoped<ICumplimientoDiarioRepository, CumplimientoDiarioRepository>();
         services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
         services.AddScoped<IHashContrasena, HashContrasena>();
 

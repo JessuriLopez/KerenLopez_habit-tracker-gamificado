@@ -128,7 +128,14 @@ public class HabitosController : ControllerBase
             return NotFound();
         }
 
-        await _repository.DeleteAsync(habito);
+        if (!await _repository.IntentarEliminarAsync(habito))
+        {
+            return Conflict(new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "El hábito tiene registros de cumplimiento y no se puede eliminar."
+            });
+        }
 
         return NoContent();
     }
