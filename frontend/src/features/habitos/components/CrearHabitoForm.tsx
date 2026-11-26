@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Button } from '../../../components/Button'
 import type { HabitoGlobal } from '../types/habito.types'
 import {
   crearHabitoGlobalAsync,
@@ -95,24 +96,23 @@ export function CrearHabitoForm({
         </div>
 
         <div className="flex items-center gap-2 self-start">
-          <button
+          <Button
             type="submit"
             disabled={!isValid || isSubmitting}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 disabled:border disabled:border-slate-700 text-white font-medium text-sm px-5 py-2.5 rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed"
+            className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 disabled:border disabled:border-slate-700 text-white px-5 disabled:cursor-not-allowed"
           >
             {isSubmitting
               ? '⏳ Guardando en BD...'
               : '💾 Guardar en PostgreSQL'}
-          </button>
+          </Button>
 
-          <button
-            type="button"
+          <Button
             onClick={onCancelar}
             disabled={isSubmitting}
-            className="bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium text-sm px-4 py-2.5 rounded-lg transition-colors cursor-pointer"
+            className="bg-slate-700 hover:bg-slate-600 text-slate-200 px-4"
           >
             Cancelar
-          </button>
+          </Button>
         </div>
       </div>
 

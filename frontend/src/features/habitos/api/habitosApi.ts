@@ -1,33 +1,20 @@
 
 import axios from 'axios'
+import { apiClient } from '../../../api/apiClient'
 import type {
   HabitoGlobal,
   CrearHabitoGlobalDto,
   FluentValidationError,
 } from '../types/habito.types'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-
-if (!API_BASE_URL) {
-  console.error(
-    'ERROR: No se detectó VITE_API_BASE_URL en frontend/.env'
-  )
-}
-
-// Cliente HTTP de HabitForge
-export const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
+export { apiClient }
 
 // 1. GET: Obtener todos los hábitos
 export const obtenerHabitosGlobalesAsync = async (): Promise<HabitoGlobal[]> => {
   const respuesta = await apiClient.get<HabitoGlobal[]>('/habitos')
 
   if (!Array.isArray(respuesta.data)) {
-    throw new Error('La respuesta recibida no es un arreglo JSON válido.')
+    throw new Error('La respuesta recibida no es un arreglo JSON vlido.')
   }
 
   return respuesta.data

@@ -11,4 +11,10 @@ public class HabitForgeDbContext : DbContext
     }
 
     public DbSet<HabitoGlobal> HabitosGlobales { get; set; }
+    public DbSet<Usuario> Usuarios { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfiguration(new UsuarioConfiguration());
+    }
 }

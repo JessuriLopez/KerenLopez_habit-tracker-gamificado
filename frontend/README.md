@@ -1,78 +1,40 @@
-# React + TypeScript + Vite
+﻿# Interfaz web de HabitForge
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+En esta pantalla puede consultar el catálogo global, buscar hábitos por nombre, agregar nuevos hábitos y eliminar los que ya no necesita.
 
-Currently, two official plugins are available:
+## Herramientas
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **React** construye la interfaz con componentes como el formulario y la tarjeta de cada hábito.
+- **TypeScript** comprueba, antes de ejecutar la aplicación, que el código usa los datos con los tipos esperados.
+- **Vite** inicia un servidor para trabajar en local y actualiza la página cuando guarda cambios. Esa actualización durante el desarrollo se conoce como **HMR**.
+- **ESLint** revisa el código y señala problemas según las reglas configuradas en el proyecto.
 
-## React Compiler
+## Iniciar la interfaz
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+Primero, prepare PostgreSQL e inicie la API según el [README principal](../README.md). Luego cree el archivo `frontend/.env` con esta dirección.
 
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```dotenv
+VITE_API_BASE_URL=http://localhost:5020/api
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+La variable indica dónde está la API. El cliente añade `/habitos` a esa dirección para consultar el catálogo.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Desde la raíz del repositorio, ejecute estos comandos.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```sh
+cd frontend
+pnpm install
+pnpm dev
 ```
+
+Abra `http://localhost:5173` en el navegador. Si Vite muestra otro puerto, use el que indique la terminal y actualice `CORS_ALLOWED_ORIGINS` en `backend/HabitForge.API/.env` antes de reiniciar la API.
+
+## Otros comandos
+
+Ejecute estos comandos dentro de `frontend/`.
+
+| Comando | Para qué sirve |
+| --- | --- |
+| `pnpm lint` | Revisa el código con ESLint. |
+| `pnpm build` | Comprueba los tipos y genera los archivos de producción en `dist/`. |
+| `pnpm preview` | Muestra en local los archivos generados por `pnpm build`. |

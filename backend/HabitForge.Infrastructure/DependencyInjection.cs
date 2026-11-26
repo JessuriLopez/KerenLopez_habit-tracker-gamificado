@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using HabitForge.Application.Interfaces;
+using HabitForge.Domain.Entities;
 using HabitForge.Infrastructure.Data;
 using HabitForge.Infrastructure.Repositories;
+using HabitForge.Infrastructure.Security;
+using Microsoft.AspNetCore.Identity;
 
 namespace HabitForge.Infrastructure;
 
@@ -16,6 +19,9 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
 
         services.AddScoped<IHabitoRepository, HabitoRepository>();
+        services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+        services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
+        services.AddScoped<IHashContrasena, HashContrasena>();
 
         return services;
     }

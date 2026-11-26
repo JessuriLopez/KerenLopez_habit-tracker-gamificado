@@ -1,81 +1,26 @@
-
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { Button } from '../../../components/Button'
+import { useCatalogoHabitos } from '../hooks/useCatalogoHabitos'
 import type { HabitoGlobal } from '../types/habito.types'
-import {
-  obtenerHabitosGlobalesAsync,
-  eliminarHabitoGlobalAsync,
-  extraerMensajeErrorBackend,
-} from '../api/habitosApi'
 import { HabitoGlobalCard } from './HabitoGlobalCard'
 import { CrearHabitoForm } from './CrearHabitoForm'
 
 export function CatalogoHabitosView() {
-  const [habitos, setHabitos] = useState<HabitoGlobal[]>([])
-  const [cargando, setCargando] = useState<boolean>(true)
-  const [errorRed, setErrorRed] = useState<string | null>(null)
-  const [errorEliminacion, setErrorEliminacion] = useState<string | null>(null)
-  const [busqueda, setBusqueda] = useState<string>('')
-  const [mostrarFormulario, setMostrarFormulario] = useState<boolean>(false)
-  const [idEliminando, setIdEliminando] = useState<number | null>(null)
+  const {
+    habitos,
+    cargando,
+    errorRed,
+    errorEliminacion,
+    idEliminando,
+    agregarHabitoAlCatalogo,
+    manejarEliminarHabito,
+  } = useCatalogoHabitos()
+  const [busqueda, setBusqueda] = useState('')
+  const [mostrarFormulario, setMostrarFormulario] = useState(false)
 
-  useEffect(() => {
-    obtenerHabitosGlobalesAsync()
-      .then((datosDesdePostgres) => {
-        setHabitos(datosDesdePostgres)
-        setErrorRed(null)
-      })
-      .catch((error) => {
-        console.error('Error en la petición HTTP:', error)
-        setErrorRed(extraerMensajeErrorBackend(error))
-      })
-      .finally(() => {
-        setCargando(false)
-      })
-  }, [])
-
-  // Crear hábito y actualizar el catálogo sin recargar
-  const manejarHabitoCreado = (nuevoHabitoDesdeBD: HabitoGlobal) => {
-    setHabitos((habitosActuales) => [
-      ...habitosActuales,
-      nuevoHabitoDesdeBD,
-    ])
-
+  const manejarHabitoCreado = (nuevoHabito: HabitoGlobal) => {
+    agregarHabitoAlCatalogo(nuevoHabito)
     setMostrarFormulario(false)
-  }
-
-  // Eliminar un hábito mediante DELETE en .NET
-  const manejarEliminarHabito = async (id: number) => {
-    if (idEliminando !== null) return
-
-    const habito = habitos.find((item) => item.id === id)
-
-    if (!habito) return
-
-    const confirmado = window.confirm(
-      `¿Estás seguro de que deseas eliminar el hábito "${habito.nombre}"?\n\nEsta acción eliminará el registro de PostgreSQL.`
-    )
-
-    if (!confirmado) return
-
-    try {
-      setErrorEliminacion(null)
-      setIdEliminando(id)
-
-      // Esperamos que .NET confirme la eliminación
-      await eliminarHabitoGlobalAsync(id)
-
-      // Actualizamos React sin modificar el arreglo original
-      setHabitos((habitosActuales) =>
-        habitosActuales.filter((item) => item.id !== id)
-      )
-
-    } catch (error) {
-      console.error('Error al eliminar el hábito:', error)
-      setErrorEliminacion(extraerMensajeErrorBackend(error))
-
-    } finally {
-      setIdEliminando(null)
-    }
   }
 
   const habitosFiltrados = habitos.filter((habito) =>
@@ -99,12 +44,12 @@ export function CatalogoHabitosView() {
         </div>
 
         {!mostrarFormulario && (
-          <button
+          <Button
             onClick={() => setMostrarFormulario(true)}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-4 py-2.5 rounded-lg transition-colors shadow-sm self-start sm:self-auto cursor-pointer"
+            className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 shadow-sm self-start sm:self-auto"
           >
             + Nuevo Hábito Global
-          </button>
+          </Button>
         )}
       </div>
 
@@ -119,7 +64,10 @@ export function CatalogoHabitosView() {
       {/* Buscador */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <input
+          id="buscar-habitos"
+          name="buscarHabitos"
           type="text"
+          aria-label="Buscar hábitos"
           placeholder="🔍 Filtrar hábitos provenientes de PostgreSQL..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}

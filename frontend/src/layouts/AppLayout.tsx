@@ -1,12 +1,24 @@
 
 import type { ReactNode } from 'react'
+import { Button } from '../components/Button'
 
 // Contrato del componente
 interface AppLayoutProps {
   children: ReactNode
+  onAbrirLogin: () => void
+  onVolverAlCatalogo: () => void
 }
 
-export function AppLayout({ children }: AppLayoutProps) {
+export function AppLayout({ children, onAbrirLogin, onVolverAlCatalogo }: AppLayoutProps) {
+  const botonLogin = (
+    <Button
+      onClick={onAbrirLogin}
+      className="bg-indigo-600 px-3 text-white hover:bg-indigo-500"
+    >
+      Iniciar sesión
+    </Button>
+  )
+
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col md:flex-row">
 
@@ -28,6 +40,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <nav className="space-y-2">
             <a
               href="#"
+              onClick={onVolverAlCatalogo}
               className="flex items-center gap-3 px-3 py-2.5 bg-indigo-600/15 text-indigo-400 rounded-lg font-medium text-sm border border-indigo-500/20"
             >
               <span>🌐</span> Catálogo Global
@@ -52,6 +65,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <p className="text-sm font-semibold text-amber-400">
             👤 Modo Invitado
           </p>
+          <div className="mt-3">{botonLogin}</div>
         </div>
       </aside>
 
@@ -67,9 +81,12 @@ export function AppLayout({ children }: AppLayoutProps) {
           </span>
         </div>
 
-        <span className="text-xs bg-amber-500/10 text-amber-400 px-2.5 py-1 rounded-md border border-amber-500/20 font-medium">
-          👤 Invitado
-        </span>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <span className="text-xs bg-amber-500/10 text-amber-400 px-2.5 py-1 rounded-md border border-amber-500/20 font-medium">
+            👤 Invitado
+          </span>
+          {botonLogin}
+        </div>
       </header>
 
       {/* 3. CONTENIDO CENTRAL */}
