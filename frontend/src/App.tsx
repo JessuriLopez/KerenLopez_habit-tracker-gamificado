@@ -4,6 +4,7 @@ import { LoginForm } from './features/auth/components/LoginForm'
 import { RegistroForm } from './features/auth/components/RegistroForm'
 import { useSesion } from './features/auth/hooks/useSesion'
 import { CatalogoHabitosView } from './features/habitos/components/CatalogoHabitosView'
+import { RecompensasView } from './features/recompensas/components/RecompensasView'
 import { AppLayout } from './layouts/AppLayout'
 
 function RutasHabitForge() {
@@ -31,6 +32,9 @@ function RutasHabitForge() {
         <Route path="/catalogo" element={sesion ? (
           <CatalogoHabitosView token={sesion.token} puedeAdministrar={sesion.usuario.rol === 'GameMaster'} />
         ) : <Navigate to="/login" replace />} />
+        <Route path="/recompensas" element={sesion?.usuario.rol === 'GameMaster'
+          ? <RecompensasView token={sesion.token} />
+          : <Navigate to={entrada} replace />} />
         <Route path="*" element={<Navigate to={entrada} replace />} />
       </Routes>
     </AppLayout>

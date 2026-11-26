@@ -20,7 +20,6 @@ var corsAllowedOrigins = Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGIN
         "Falta la variable CORS_ALLOWED_ORIGINS en el archivo .env."
     );
     
-builder.Services.AddApplication();
 builder.Services.AddInfrastructure(connectionString);
 
 if (habilitarGameMaster)
@@ -34,6 +33,7 @@ if (habilitarGameMaster)
     return;
 }
 
+builder.Services.AddApplication();
 AutenticacionJwt.Agregar(builder.Services);
 builder.Services.AddControllers();
 

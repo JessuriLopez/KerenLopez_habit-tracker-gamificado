@@ -1,6 +1,6 @@
 
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { Button } from '../components/Button'
 import type { Sesion } from '../features/auth/types/sesion.types'
 
@@ -11,7 +11,18 @@ interface AppLayoutProps {
   onCerrarSesion: () => void
 }
 
+const estiloEnlace = ({ isActive }: { isActive: boolean }) =>
+  `block rounded-lg border px-3 py-2.5 text-sm font-medium ${isActive
+    ? 'border-indigo-500/20 bg-indigo-600/15 text-indigo-400'
+    : 'border-transparent text-slate-300 hover:bg-slate-800'}`
+
 export function AppLayout({ children, usuario, onCerrarSesion }: AppLayoutProps) {
+  const enlaces = usuario && <>
+    <NavLink to="/catalogo" className={estiloEnlace}>
+      <span aria-hidden="true">🌐</span> {usuario.rol === 'GameMaster' ? 'Administrar catálogo' : 'Catálogo Global'}
+    </NavLink>
+    {usuario.rol === 'GameMaster' && <NavLink to="/recompensas" className={estiloEnlace}>Recompensas</NavLink>}
+  </>
   const botonSalir = usuario && (
     <Button
       onClick={onCerrarSesion}
@@ -40,12 +51,7 @@ export function AppLayout({ children, usuario, onCerrarSesion }: AppLayoutProps)
 
           {/* Navegación */}
           {usuario && <nav className="space-y-2" aria-label="Menú principal">
-            <Link
-              to="/catalogo"
-              className="flex items-center gap-3 px-3 py-2.5 bg-indigo-600/15 text-indigo-400 rounded-lg font-medium text-sm border border-indigo-500/20"
-            >
-              <span>🌐</span> {usuario.rol === 'GameMaster' ? 'Administrar catálogo' : 'Catálogo Global'}
-            </Link>
+            {enlaces}
           </nav>}
         </div>
 
@@ -81,6 +87,9 @@ export function AppLayout({ children, usuario, onCerrarSesion }: AppLayoutProps)
           {botonSalir}
         </div>
       </header>
+      {usuario?.rol === 'GameMaster' && <nav className="flex flex-wrap gap-2 border-b border-slate-800 bg-slate-950 px-4 py-2 md:hidden" aria-label="Menú principal">
+        {enlaces}
+      </nav>}
 
       {/* 3. CONTENIDO CENTRAL */}
       <main className="flex-1 min-w-0 p-6 md:p-10 overflow-y-auto">

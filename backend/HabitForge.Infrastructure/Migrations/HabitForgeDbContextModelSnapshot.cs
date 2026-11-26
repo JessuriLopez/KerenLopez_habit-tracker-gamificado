@@ -58,6 +58,41 @@ namespace HabitForge.Infrastructure.Migrations
                     b.ToTable("HabitosGlobales");
                 });
 
+            modelBuilder.Entity("HabitForge.Domain.Entities.Recompensa", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DiasRequeridos")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("HabitoId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Stock")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HabitoId");
+
+                    b.ToTable("Recompensas", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Recompensas_DiasRequeridos", "\"DiasRequeridos\" > 0");
+
+                            t.HasCheckConstraint("CK_Recompensas_Stock", "\"Stock\" >= 0");
+
+                            t.HasCheckConstraint("CK_Recompensas_Titulo", "length(btrim(\"Titulo\")) > 0");
+                        });
+                });
+
             modelBuilder.Entity("HabitForge.Domain.Entities.Usuario", b =>
                 {
                     b.Property<int>("Id")
@@ -111,6 +146,18 @@ namespace HabitForge.Infrastructure.Migrations
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("HabitForge.Domain.Entities.Recompensa", b =>
+                {
+                    b.HasOne("HabitForge.Domain.Entities.HabitoGlobal", "Habito")
+                        .WithMany()
+                        .HasForeignKey("HabitoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_Recompensas_HabitosGlobales_HabitoId");
+
+                    b.Navigation("Habito");
                 });
 #pragma warning restore 612, 618
         }

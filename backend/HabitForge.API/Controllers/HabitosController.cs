@@ -133,7 +133,7 @@ public class HabitosController : ControllerBase
             return Conflict(new ProblemDetails
             {
                 Status = StatusCodes.Status409Conflict,
-                Title = "El hábito tiene registros de cumplimiento y no se puede eliminar."
+                Title = "El hábito tiene cumplimientos o recompensas asociados y no se puede eliminar."
             });
         }
 

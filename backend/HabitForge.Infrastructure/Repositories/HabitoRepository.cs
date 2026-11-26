@@ -49,7 +49,7 @@ public class HabitoRepository : IHabitoRepository
             return true;
         }
         catch (DbUpdateException error) when (error.InnerException is PostgresException
-            { SqlState: PostgresErrorCodes.ForeignKeyViolation, ConstraintName: CumplimientoDiarioConfiguration.ClaveHabito })
+            { SqlState: PostgresErrorCodes.ForeignKeyViolation, ConstraintName: CumplimientoDiarioConfiguration.ClaveHabito or RecompensaConfiguration.ClaveHabito })
         {
             _context.Entry(habito).State = EntityState.Detached;
             return false;
