@@ -1,4 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { isAxiosError } from 'axios'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Button } from '../../../components/Button'
 import { extraerMensajeErrorBackend } from '../../habitos/api/habitosApi'
@@ -10,11 +12,14 @@ interface RecompensaFormProps {
   inicial?: DatosRecompensa
   onGuardar: (datos: DatosRecompensa) => Promise<void>
   onCancelar: () => void
+  onActualizar?: () => Promise<void>
 }
 
 const estiloCampo = 'mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-white focus:border-indigo-500 focus:outline-none aria-invalid:border-amber-500'
 
-export function RecompensaForm({ habitos, inicial, onGuardar, onCancelar }: RecompensaFormProps) {
+export function RecompensaForm({ habitos, inicial, onGuardar, onCancelar, onActualizar }: RecompensaFormProps) {
+  const [conflicto, setConflicto] = useState(false)
+  const [actualizando, setActualizando] = useState(false)
   const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<DatosRecompensa>({
     resolver: zodResolver(recompensaSchema),
     defaultValues: inicial ? {
@@ -26,9 +31,15 @@ export function RecompensaForm({ habitos, inicial, onGuardar, onCancelar }: Reco
   })
 
   const guardar = async (datos: DatosRecompensa) => {
+    if (conflicto || actualizando) return
+
     try {
       await onGuardar(datos)
     } catch (error) {
+      if (onActualizar && isAxiosError(error) && error.response?.status === 409) {
+        setConflicto(true)
+        return
+      }
       setError('root.servidor', { message: extraerMensajeErrorBackend(error) })
     }
   }
@@ -36,7 +47,7 @@ export function RecompensaForm({ habitos, inicial, onGuardar, onCancelar }: Reco
   return (
     <form onSubmit={handleSubmit(guardar)} noValidate className="mb-6 rounded-xl border border-indigo-500/40 bg-slate-800 p-5 shadow-lg">
       <h2 className="mb-4 font-bold text-white">{inicial ? 'Editar recompensa' : 'Nueva recompensa'}</h2>
-      <fieldset disabled={isSubmitting} className="grid gap-4 text-sm sm:grid-cols-2">
+      <fieldset disabled={isSubmitting || conflicto || actualizando} className="grid gap-4 text-sm sm:grid-cols-2">
         <div>
           <label htmlFor="recompensa-titulo" className="font-medium">Título</label>
           <input id="recompensa-titulo" className={estiloCampo} aria-invalid={Boolean(errors.titulo)}
@@ -69,11 +80,28 @@ export function RecompensaForm({ habitos, inicial, onGuardar, onCancelar }: Reco
         </div>
       </fieldset>
       {errors.root?.servidor && <p className="mt-3 text-sm text-red-300" role="alert">{errors.root.servidor.message}</p>}
+      {conflicto && <p className="mt-3 text-sm text-amber-300" role="alert">
+        La recompensa cambió desde que abrió el formulario. Actualícela antes de guardar. Al actualizar se descartarán sus cambios sin guardar.
+      </p>}
       <div className="mt-4 flex flex-wrap gap-2">
-        <Button type="submit" disabled={isSubmitting} className="bg-indigo-600 px-4 text-white hover:bg-indigo-500 disabled:opacity-50">
+        <Button type="submit" disabled={isSubmitting || conflicto || actualizando} className="bg-indigo-600 px-4 text-white hover:bg-indigo-500 disabled:opacity-50">
           {isSubmitting ? 'Guardando…' : 'Guardar recompensa'}
         </Button>
-        <Button onClick={onCancelar} disabled={isSubmitting} className="bg-slate-700 px-4 hover:bg-slate-600 disabled:opacity-50">
+        {conflicto && onActualizar && (
+          <Button disabled={actualizando} onClick={async () => {
+            setActualizando(true)
+            try {
+              await onActualizar()
+            } catch (error) {
+              setError('root.servidor', { message: extraerMensajeErrorBackend(error) })
+            } finally {
+              setActualizando(false)
+            }
+          }} className="bg-indigo-600 px-4 hover:bg-indigo-500 disabled:opacity-50">
+            {actualizando ? 'Actualizando…' : 'Actualizar información'}
+          </Button>
+        )}
+        <Button onClick={onCancelar} disabled={isSubmitting || actualizando} className="bg-slate-700 px-4 hover:bg-slate-600 disabled:opacity-50">
           Cancelar
         </Button>
       </div>

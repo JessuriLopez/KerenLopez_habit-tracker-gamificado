@@ -14,6 +14,8 @@ public sealed class GestionarRecompensas(IRecompensaRepository recompensas, IHab
             ? await recompensas.BuscarAsync(id.Value, cancellationToken)
             : new Recompensa { Titulo = string.Empty };
         if (recompensa is null) return new(EstadoGuardadoRecompensa.RecompensaInexistente);
+        if (id.HasValue && recompensa.Version != datos.Version)
+            return new(EstadoGuardadoRecompensa.VersionDesactualizada);
 
         var habito = await habitos.GetByIdAsync(datos.HabitoId!.Value);
         if (habito is null) return new(EstadoGuardadoRecompensa.HabitoInexistente);
@@ -26,7 +28,7 @@ public sealed class GestionarRecompensas(IRecompensaRepository recompensas, IHab
         var estado = await recompensas.GuardarAsync(recompensa, cancellationToken);
         return estado == EstadoGuardadoRecompensa.Guardada
             ? new(estado, new RecompensaResponse(recompensa.Id, recompensa.Titulo, habito.Id, habito.Nombre,
-                recompensa.DiasRequeridos, recompensa.Stock))
+                recompensa.DiasRequeridos, recompensa.Stock, recompensa.Version))
             : new(estado);
     }
 }

@@ -18,5 +18,6 @@ internal sealed class RecompensaConfiguration : IEntityTypeConfiguration<Recompe
         });
         builder.HasOne(recompensa => recompensa.Habito).WithMany().HasForeignKey(recompensa => recompensa.HabitoId)
             .HasConstraintName(ClaveHabito).OnDelete(DeleteBehavior.Restrict);
+        builder.Property(recompensa => recompensa.Version).IsRowVersion();
     }
 }

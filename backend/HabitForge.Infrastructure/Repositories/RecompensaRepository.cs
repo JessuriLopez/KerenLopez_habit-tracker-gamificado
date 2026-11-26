@@ -11,7 +11,7 @@ public sealed class RecompensaRepository(HabitForgeDbContext context) : IRecompe
 {
     private static readonly Expression<Func<Recompensa, RecompensaResponse>> Proyeccion = recompensa =>
         new RecompensaResponse(recompensa.Id, recompensa.Titulo, recompensa.HabitoId, recompensa.Habito.Nombre,
-            recompensa.DiasRequeridos, recompensa.Stock);
+            recompensa.DiasRequeridos, recompensa.Stock, recompensa.Version);
 
     public Task<RecompensaResponse[]> ListarAsync(CancellationToken cancellationToken) =>
         context.Recompensas.OrderBy(recompensa => recompensa.Id).Select(Proyeccion).ToArrayAsync(cancellationToken);
@@ -25,6 +25,11 @@ public sealed class RecompensaRepository(HabitForgeDbContext context) : IRecompe
     public async Task<EstadoGuardadoRecompensa> GuardarAsync(Recompensa recompensa, CancellationToken cancellationToken)
     {
         if (recompensa.Id == 0) context.Recompensas.Add(recompensa);
+        else
+        {
+            // Verifica la versión en PostgreSQL incluso si los valores enviados no cambiaron.
+            context.Entry(recompensa).Property(actual => actual.Titulo).IsModified = true;
+        }
 
         try
         {
@@ -33,7 +38,7 @@ public sealed class RecompensaRepository(HabitForgeDbContext context) : IRecompe
         }
         catch (DbUpdateConcurrencyException)
         {
-            return EstadoGuardadoRecompensa.RecompensaInexistente;
+            return EstadoGuardadoRecompensa.VersionDesactualizada;
         }
         catch (DbUpdateException error) when (error.InnerException is PostgresException
             { SqlState: PostgresErrorCodes.ForeignKeyViolation, ConstraintName: RecompensaConfiguration.ClaveHabito })

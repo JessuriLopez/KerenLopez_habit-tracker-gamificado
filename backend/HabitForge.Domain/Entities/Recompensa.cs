@@ -8,4 +8,5 @@ public sealed class Recompensa
     public HabitoGlobal Habito { get; private set; } = null!;
     public int DiasRequeridos { get; set; }
     public int Stock { get; set; }
+    public uint Version { get; private set; }
 }

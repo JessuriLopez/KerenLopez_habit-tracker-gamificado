@@ -2,7 +2,7 @@ using HabitForge.Domain.Entities;
 
 namespace HabitForge.Application.Features.Recompensas;
 
-public enum EstadoGuardadoRecompensa { Guardada, HabitoInexistente, RecompensaInexistente }
+public enum EstadoGuardadoRecompensa { Guardada, HabitoInexistente, RecompensaInexistente, VersionDesactualizada }
 public enum EstadoBorradoRecompensa { Eliminada, Inexistente, TieneCupones }
 
 public interface IRecompensaRepository

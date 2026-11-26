@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '../../../components/Button'
 import { extraerMensajeErrorBackend, obtenerHabitosGlobalesAsync } from '../../habitos/api/habitosApi'
 import type { HabitoGlobal } from '../../habitos/types/habito.types'
-import { eliminarRecompensa, guardarRecompensa, listarRecompensas, type Recompensa } from '../api/recompensasApi'
+import { consultarRecompensa, eliminarRecompensa, guardarRecompensa, listarRecompensas, type Recompensa } from '../api/recompensasApi'
 import { RecompensaForm } from './RecompensaForm'
 
 export function RecompensasView({ token }: { token: string }) {
@@ -61,11 +61,17 @@ export function RecompensasView({ token }: { token: string }) {
       {!cargando && !errorCarga && habitos.length === 0 && <p className="text-slate-300">Cree un hábito en el catálogo para agregar una recompensa.</p>}
       {formulario && (
         <RecompensaForm
+          key={formulario === 'nueva' ? 'nueva' : `${formulario.id}:${formulario.version}`}
           habitos={habitos}
           inicial={formulario === 'nueva' ? undefined : formulario}
           onCancelar={() => setFormulario(null)}
+          onActualizar={formulario === 'nueva' ? undefined : async () => {
+            const vigente = await consultarRecompensa(token, formulario.id)
+            setRecompensas(actuales => actuales.map(actual => actual.id === vigente.id ? vigente : actual))
+            setFormulario(vigente)
+          }}
           onGuardar={async datos => {
-            const nueva = await guardarRecompensa(token, datos, formulario === 'nueva' ? undefined : formulario.id)
+            const nueva = await guardarRecompensa(token, datos, formulario === 'nueva' ? undefined : formulario)
             setRecompensas(actuales => formulario === 'nueva'
               ? [...actuales, nueva]
               : actuales.map(actual => actual.id === nueva.id ? nueva : actual))
