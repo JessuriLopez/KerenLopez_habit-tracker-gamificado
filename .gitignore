@@ -1,5 +1,7 @@
 # Variables de entorno / secretos
 *.env
+.env.*
+!.env.example
 
 # Archivos generados por .NET
 **/bin/
