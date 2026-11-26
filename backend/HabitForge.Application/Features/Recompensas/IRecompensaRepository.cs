@@ -3,6 +3,7 @@ using HabitForge.Domain.Entities;
 namespace HabitForge.Application.Features.Recompensas;
 
 public enum EstadoGuardadoRecompensa { Guardada, HabitoInexistente, RecompensaInexistente }
+public enum EstadoBorradoRecompensa { Eliminada, Inexistente, TieneCupones }
 
 public interface IRecompensaRepository
 {
@@ -10,5 +11,5 @@ public interface IRecompensaRepository
     Task<RecompensaResponse?> ConsultarAsync(int id, CancellationToken cancellationToken);
     Task<Recompensa?> BuscarAsync(int id, CancellationToken cancellationToken);
     Task<EstadoGuardadoRecompensa> GuardarAsync(Recompensa recompensa, CancellationToken cancellationToken);
-    Task<bool> EliminarAsync(int id, CancellationToken cancellationToken);
+    Task<EstadoBorradoRecompensa> EliminarAsync(int id, CancellationToken cancellationToken);
 }

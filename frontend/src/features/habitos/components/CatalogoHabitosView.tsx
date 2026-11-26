@@ -140,6 +140,14 @@ export function CatalogoHabitosView({ token, puedeAdministrar }: CatalogoHabitos
           No se pudo registrar el cumplimiento. Vuelva a intentarlo.
         </p>
       )}
+      {checkIns.cupones.length > 0 && (
+        <div role="status" className="mb-6 rounded-xl border border-emerald-600/40 bg-emerald-950/40 p-4 text-sm text-emerald-300">
+          {checkIns.cupones.length === 1 ? 'Recompensa desbloqueada' : 'Recompensas desbloqueadas'}
+          <ul className="mt-1 list-disc pl-5">
+            {checkIns.cupones.map(cupon => <li key={cupon.id}>{cupon.titulo}</li>)}
+          </ul>
+        </div>
+      )}
 
       {/* Tarjetas de hábitos */}
       {!cargando && !errorRed && (
@@ -156,6 +164,8 @@ export function CatalogoHabitosView({ token, puedeAdministrar }: CatalogoHabitos
               completado={checkIns.estado?.habitosCompletados.includes(habito.id)}
               completando={checkIns.idRegistrando === habito.id}
               cumplimientoDeshabilitado={!checkIns.estado || checkIns.idRegistrando !== null}
+              progreso={checkIns.estado?.progreso.find(progreso => progreso.habitoId === habito.id)}
+              progresoCargado={Boolean(checkIns.estado)}
             />
           ))}
         </section>

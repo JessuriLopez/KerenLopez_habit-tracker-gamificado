@@ -42,6 +42,17 @@ public sealed class RecompensaRepository(HabitForgeDbContext context) : IRecompe
         }
     }
 
-    public async Task<bool> EliminarAsync(int id, CancellationToken cancellationToken) =>
-        await context.Recompensas.Where(recompensa => recompensa.Id == id).ExecuteDeleteAsync(cancellationToken) == 1;
+    public async Task<EstadoBorradoRecompensa> EliminarAsync(int id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await context.Recompensas.Where(recompensa => recompensa.Id == id).ExecuteDeleteAsync(cancellationToken) == 1
+                ? EstadoBorradoRecompensa.Eliminada : EstadoBorradoRecompensa.Inexistente;
+        }
+        catch (PostgresException error) when (error is
+            { SqlState: PostgresErrorCodes.ForeignKeyViolation, ConstraintName: CuponConfiguration.ClaveRecompensa })
+        {
+            return EstadoBorradoRecompensa.TieneCupones;
+        }
+    }
 }

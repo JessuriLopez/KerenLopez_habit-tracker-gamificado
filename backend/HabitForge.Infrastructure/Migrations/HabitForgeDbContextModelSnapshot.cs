@@ -41,6 +41,33 @@ namespace HabitForge.Infrastructure.Migrations
                     b.ToTable("CumplimientosDiarios", (string)null);
                 });
 
+            modelBuilder.Entity("HabitForge.Domain.Entities.Cupon", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("ObtenidoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("RecompensaId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecompensaId");
+
+                    b.HasIndex("UsuarioId", "RecompensaId")
+                        .IsUnique();
+
+                    b.ToTable("Cupones", (string)null);
+                });
+
             modelBuilder.Entity("HabitForge.Domain.Entities.HabitoGlobal", b =>
                 {
                     b.Property<int>("Id")
@@ -140,6 +167,22 @@ namespace HabitForge.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("FK_CumplimientosDiarios_HabitosGlobales_HabitoId");
+
+                    b.HasOne("HabitForge.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HabitForge.Domain.Entities.Cupon", b =>
+                {
+                    b.HasOne("HabitForge.Domain.Entities.Recompensa", null)
+                        .WithMany()
+                        .HasForeignKey("RecompensaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_Cupones_Recompensas_RecompensaId");
 
                     b.HasOne("HabitForge.Domain.Entities.Usuario", null)
                         .WithMany()

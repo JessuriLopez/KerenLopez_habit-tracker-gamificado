@@ -27,8 +27,10 @@ public sealed class CheckInsController(CheckInsDiarios checkIns) : ControllerBas
     {
         if (!ObtenerUsuarioId(out var usuarioId)) return Unauthorized();
 
-        return await checkIns.RegistrarAsync(usuarioId, habitoId, cancellationToken) switch
+        var registro = await checkIns.RegistrarAsync(usuarioId, habitoId, cancellationToken);
+        return registro.Resultado switch
         {
+            ResultadoCheckIn.Registrado when registro.Cupones.Length > 0 => Ok(registro.Cupones),
             ResultadoCheckIn.Registrado => NoContent(),
             ResultadoCheckIn.Duplicado => Conflict(new ProblemDetails
             {

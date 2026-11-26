@@ -14,11 +14,13 @@ public class HabitForgeDbContext : DbContext
     public DbSet<Usuario> Usuarios { get; set; }
     public DbSet<CumplimientoDiario> CumplimientosDiarios { get; set; }
     public DbSet<Recompensa> Recompensas { get; set; }
+    public DbSet<Cupon> Cupones { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new UsuarioConfiguration());
         modelBuilder.ApplyConfiguration(new CumplimientoDiarioConfiguration());
         modelBuilder.ApplyConfiguration(new RecompensaConfiguration());
+        modelBuilder.ApplyConfiguration(new CuponConfiguration());
     }
 }

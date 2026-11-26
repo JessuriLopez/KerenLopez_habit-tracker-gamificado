@@ -33,7 +33,16 @@ public sealed class RecompensasController(IRecompensaRepository recompensas, Ges
 
     [HttpDelete("{id:int:min(1)}")]
     public async Task<IActionResult> Eliminar(int id, CancellationToken cancellationToken) =>
-        await recompensas.EliminarAsync(id, cancellationToken) ? NoContent() : NotFound();
+        await recompensas.EliminarAsync(id, cancellationToken) switch
+        {
+            EstadoBorradoRecompensa.Eliminada => NoContent(),
+            EstadoBorradoRecompensa.TieneCupones => Conflict(new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "La recompensa tiene cupones emitidos y no se puede eliminar."
+            }),
+            _ => NotFound()
+        };
 
     private async Task<IActionResult> Guardar(int? id, RecompensaRequest datos, CancellationToken cancellationToken)
     {

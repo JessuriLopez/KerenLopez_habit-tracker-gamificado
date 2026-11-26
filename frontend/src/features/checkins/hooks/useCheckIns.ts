@@ -1,6 +1,6 @@
 import { isAxiosError } from 'axios'
 import { useEffect, useRef, useState } from 'react'
-import { consultarCheckIns, registrarCheckIn, type CheckInsDeHoy } from '../api/checkInsApi'
+import { consultarCheckIns, registrarCheckIn, type CheckInsDeHoy, type CuponDesbloqueado } from '../api/checkInsApi'
 
 export function useCheckIns(token: string | null) {
   const [estado, setEstado] = useState<CheckInsDeHoy | null>(null)
@@ -8,6 +8,7 @@ export function useCheckIns(token: string | null) {
   const [idRegistrando, setIdRegistrando] = useState<number | null>(null)
   const [errorConsulta, setErrorConsulta] = useState(false)
   const [errorRegistro, setErrorRegistro] = useState(false)
+  const [cupones, setCupones] = useState<CuponDesbloqueado[]>([])
   const registrando = useRef(false)
 
   useEffect(() => {
@@ -50,7 +51,7 @@ export function useCheckIns(token: string | null) {
     setErrorRegistro(false)
 
     try {
-      await registrarCheckIn(token, habitoId)
+      setCupones(await registrarCheckIn(token, habitoId))
       refrescar()
     } catch (error) {
       if (isAxiosError(error) && error.response?.status === 409) {
@@ -64,5 +65,5 @@ export function useCheckIns(token: string | null) {
     }
   }
 
-  return { estado, idRegistrando, errorConsulta, errorRegistro, refrescar, completar }
+  return { estado, idRegistrando, errorConsulta, errorRegistro, cupones, refrescar, completar }
 }

@@ -1,6 +1,7 @@
 
 import type { HabitoGlobal } from '../types/habito.types'
 import { Button } from '../../../components/Button'
+import type { ProgresoHabito } from '../../checkins/api/checkInsApi'
 
 interface HabitoGlobalCardProps extends HabitoGlobal {
   onEditar?: () => void
@@ -10,6 +11,8 @@ interface HabitoGlobalCardProps extends HabitoGlobal {
   completado?: boolean
   completando?: boolean
   cumplimientoDeshabilitado?: boolean
+  progreso?: ProgresoHabito
+  progresoCargado?: boolean
 }
 
 export function HabitoGlobalCard({
@@ -22,7 +25,10 @@ export function HabitoGlobalCard({
   completado = false,
   completando = false,
   cumplimientoDeshabilitado = false,
+  progreso,
+  progresoCargado = false,
 }: HabitoGlobalCardProps) {
+  const racha = progreso?.racha ?? 0
   return (
     <article className="bg-slate-800 border border-slate-700 rounded-xl p-5 flex flex-col justify-between hover:border-indigo-500 transition-colors shadow-sm">
 
@@ -41,6 +47,20 @@ export function HabitoGlobalCard({
           {nombre}
         </h3>
       </div>
+
+      {onCompletar && progresoCargado && (
+        <div className="mb-4 space-y-2 text-sm text-slate-300">
+          <p>Racha actual <strong className="text-white">{racha} {racha === 1 ? 'día' : 'días'}</strong></p>
+          {progreso?.recompensas.map(meta => (
+            <div key={meta.id} className="rounded-lg bg-slate-900/70 px-3 py-2">
+              <p className="break-words font-medium text-white">{meta.titulo}</p>
+              {meta.obtenida ? <p className="text-emerald-300">Obtenida</p> : (
+                <p>{Math.min(racha, meta.diasRequeridos)} de {meta.diasRequeridos} días{meta.stock === 0 && ' · Sin stock'}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {onCompletar && (
         <Button
