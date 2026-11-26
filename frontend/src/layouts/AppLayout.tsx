@@ -22,6 +22,7 @@ export function AppLayout({ children, usuario, onCerrarSesion }: AppLayoutProps)
       <span aria-hidden="true">🌐</span> {usuario.rol === 'GameMaster' ? 'Administrar catálogo' : 'Catálogo Global'}
     </NavLink>
     {usuario.rol === 'GameMaster' && <NavLink to="/recompensas" className={estiloEnlace}>Recompensas</NavLink>}
+    {usuario.rol === 'Jugador' && <NavLink to="/mis-premios" className={estiloEnlace}>Mis Premios</NavLink>}
   </>
   const botonSalir = usuario && (
     <Button
@@ -87,7 +88,7 @@ export function AppLayout({ children, usuario, onCerrarSesion }: AppLayoutProps)
           {botonSalir}
         </div>
       </header>
-      {usuario?.rol === 'GameMaster' && <nav className="flex flex-wrap gap-2 border-b border-slate-800 bg-slate-950 px-4 py-2 md:hidden" aria-label="Menú principal">
+      {usuario && <nav className="flex flex-wrap gap-2 border-b border-slate-800 bg-slate-950 px-4 py-2 md:hidden" aria-label="Menú principal">
         {enlaces}
       </nav>}
 
