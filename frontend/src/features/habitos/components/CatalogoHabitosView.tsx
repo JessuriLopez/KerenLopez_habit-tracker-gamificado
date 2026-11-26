@@ -3,25 +3,26 @@ import { Button } from '../../../components/Button'
 import { useCatalogoHabitos } from '../hooks/useCatalogoHabitos'
 import type { HabitoGlobal } from '../types/habito.types'
 import { HabitoGlobalCard } from './HabitoGlobalCard'
-import { CrearHabitoForm } from './CrearHabitoForm'
+import { HabitoForm } from './HabitoForm'
 
-export function CatalogoHabitosView() {
+interface CatalogoHabitosViewProps {
+  token: string
+  puedeAdministrar: boolean
+}
+
+export function CatalogoHabitosView({ token, puedeAdministrar }: CatalogoHabitosViewProps) {
   const {
     habitos,
     cargando,
     errorRed,
     errorEliminacion,
     idEliminando,
-    agregarHabitoAlCatalogo,
+    guardarHabito,
     manejarEliminarHabito,
-  } = useCatalogoHabitos()
+  } = useCatalogoHabitos(token)
   const [busqueda, setBusqueda] = useState('')
-  const [mostrarFormulario, setMostrarFormulario] = useState(false)
-
-  const manejarHabitoCreado = (nuevoHabito: HabitoGlobal) => {
-    agregarHabitoAlCatalogo(nuevoHabito)
-    setMostrarFormulario(false)
-  }
+  const [formulario, setFormulario] = useState<'nuevo' | HabitoGlobal | null>(null)
+  const habitoEditado = formulario === 'nuevo' ? null : formulario
 
   const habitosFiltrados = habitos.filter((habito) =>
     habito.nombre.toLowerCase().includes(busqueda.toLowerCase())
@@ -43,9 +44,9 @@ export function CatalogoHabitosView() {
           </p>
         </div>
 
-        {!mostrarFormulario && (
+        {puedeAdministrar && !formulario && !cargando && !errorRed && (
           <Button
-            onClick={() => setMostrarFormulario(true)}
+            onClick={() => setFormulario('nuevo')}
             className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 shadow-sm self-start sm:self-auto"
           >
             + Nuevo Hábito Global
@@ -53,11 +54,14 @@ export function CatalogoHabitosView() {
         )}
       </div>
 
-      {/* Formulario para crear hábitos */}
-      {mostrarFormulario && (
-        <CrearHabitoForm
-          onHabitoCreado={manejarHabitoCreado}
-          onCancelar={() => setMostrarFormulario(false)}
+      {puedeAdministrar && formulario && (
+        <HabitoForm
+          nombreInicial={habitoEditado?.nombre}
+          onGuardar={async (datos) => {
+            await guardarHabito(datos, habitoEditado?.id)
+            setFormulario(null)
+          }}
+          onCancelar={() => setFormulario(null)}
         />
       )}
 
@@ -129,7 +133,8 @@ export function CatalogoHabitosView() {
               key={habito.id}
               id={habito.id}
               nombre={habito.nombre}
-              onEliminar={manejarEliminarHabito}
+              onEditar={puedeAdministrar && !formulario ? () => setFormulario(habito) : undefined}
+              onEliminar={puedeAdministrar && !formulario ? manejarEliminarHabito : undefined}
               eliminando={idEliminando !== null}
             />
           ))}

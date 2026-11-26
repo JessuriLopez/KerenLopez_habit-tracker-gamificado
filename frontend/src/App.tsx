@@ -1,40 +1,47 @@
 
-import { useState } from 'react'
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { LoginForm } from './features/auth/components/LoginForm'
 import { RegistroForm } from './features/auth/components/RegistroForm'
+import { useSesion } from './features/auth/hooks/useSesion'
 import { CatalogoHabitosView } from './features/habitos/components/CatalogoHabitosView'
 import { AppLayout } from './layouts/AppLayout'
 
-type Vista = 'catalogo' | 'login' | 'registro' | 'registro-completado'
-
-function App() {
-  const [vista, setVista] = useState<Vista>('catalogo')
-  const volverAlCatalogo = () => setVista('catalogo')
-  const abrirLogin = () => setVista('login')
+function RutasHabitForge() {
+  const { sesion, iniciarSesion, cerrarSesion } = useSesion()
+  const navegar = useNavigate()
+  const ubicacion = useLocation()
+  const entrada = sesion ? '/catalogo' : '/login'
 
   return (
-    <AppLayout
-      onAbrirLogin={abrirLogin}
-      onVolverAlCatalogo={volverAlCatalogo}
-    >
-      <div hidden={vista !== 'catalogo'}>
-        <CatalogoHabitosView />
-      </div>
-      {(vista === 'login' || vista === 'registro-completado') && (
-        <LoginForm
-          onVolver={volverAlCatalogo}
-          onAbrirRegistro={() => setVista('registro')}
-          registroCompletado={vista === 'registro-completado'}
-        />
-      )}
-      {vista === 'registro' && (
-        <RegistroForm
-          onVolver={volverAlCatalogo}
-          onIrAlLogin={abrirLogin}
-          onRegistrado={() => setVista('registro-completado')}
-        />
-      )}
+    <AppLayout usuario={sesion?.usuario} onCerrarSesion={cerrarSesion}>
+      <Routes>
+        <Route path="/login" element={sesion ? <Navigate to="/catalogo" replace /> : (
+          <LoginForm
+            onAutenticado={iniciarSesion}
+            onAbrirRegistro={() => navegar('/registro')}
+            registroCompletado={ubicacion.state?.registroCompletado === true}
+          />
+        )} />
+        <Route path="/registro" element={sesion ? <Navigate to="/catalogo" replace /> : (
+          <RegistroForm
+            onIrAlLogin={() => navegar('/login', { replace: true })}
+            onRegistrado={() => navegar('/login', { replace: true, state: { registroCompletado: true } })}
+          />
+        )} />
+        <Route path="/catalogo" element={sesion ? (
+          <CatalogoHabitosView token={sesion.token} puedeAdministrar={sesion.usuario.rol === 'GameMaster'} />
+        ) : <Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to={entrada} replace />} />
+      </Routes>
     </AppLayout>
+  )
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <RutasHabitForge />
+    </BrowserRouter>
   )
 }
 

@@ -1,21 +1,23 @@
 
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { Button } from '../components/Button'
+import type { Sesion } from '../features/auth/types/sesion.types'
 
 // Contrato del componente
 interface AppLayoutProps {
   children: ReactNode
-  onAbrirLogin: () => void
-  onVolverAlCatalogo: () => void
+  usuario?: Sesion['usuario']
+  onCerrarSesion: () => void
 }
 
-export function AppLayout({ children, onAbrirLogin, onVolverAlCatalogo }: AppLayoutProps) {
-  const botonLogin = (
+export function AppLayout({ children, usuario, onCerrarSesion }: AppLayoutProps) {
+  const botonSalir = usuario && (
     <Button
-      onClick={onAbrirLogin}
+      onClick={onCerrarSesion}
       className="bg-indigo-600 px-3 text-white hover:bg-indigo-500"
     >
-      Iniciar sesión
+      Cerrar sesión
     </Button>
   )
 
@@ -37,23 +39,14 @@ export function AppLayout({ children, onAbrirLogin, onVolverAlCatalogo }: AppLay
           </div>
 
           {/* Navegación */}
-          <nav className="space-y-2">
-            <a
-              href="#"
-              onClick={onVolverAlCatalogo}
+          {usuario && <nav className="space-y-2" aria-label="Menú principal">
+            <Link
+              to="/catalogo"
               className="flex items-center gap-3 px-3 py-2.5 bg-indigo-600/15 text-indigo-400 rounded-lg font-medium text-sm border border-indigo-500/20"
             >
-              <span>🌐</span> Catálogo Global
-            </a>
-
-            <span className="flex items-center gap-3 px-3 py-2.5 text-slate-500 rounded-lg font-medium text-sm cursor-not-allowed">
-              <span>📈</span> Mis Hábitos (Unidad 3)
-            </span>
-
-            <span className="flex items-center gap-3 px-3 py-2.5 text-slate-500 rounded-lg font-medium text-sm cursor-not-allowed">
-              <span>📊</span> Progreso (Unidad 3)
-            </span>
-          </nav>
+              <span>🌐</span> {usuario.rol === 'GameMaster' ? 'Administrar catálogo' : 'Catálogo Global'}
+            </Link>
+          </nav>}
         </div>
 
         {/* Estado de seguridad */}
@@ -63,9 +56,9 @@ export function AppLayout({ children, onAbrirLogin, onVolverAlCatalogo }: AppLay
           </p>
 
           <p className="text-sm font-semibold text-amber-400">
-            👤 Modo Invitado
+            {usuario ? `${usuario.nombre} · ${usuario.rol}` : '👤 Modo Invitado'}
           </p>
-          <div className="mt-3">{botonLogin}</div>
+          {botonSalir && <div className="mt-3">{botonSalir}</div>}
         </div>
       </aside>
 
@@ -83,9 +76,9 @@ export function AppLayout({ children, onAbrirLogin, onVolverAlCatalogo }: AppLay
 
         <div className="flex flex-wrap items-center justify-end gap-2">
           <span className="text-xs bg-amber-500/10 text-amber-400 px-2.5 py-1 rounded-md border border-amber-500/20 font-medium">
-            👤 Invitado
+            {usuario?.rol ?? '👤 Invitado'}
           </span>
-          {botonLogin}
+          {botonSalir}
         </div>
       </header>
 

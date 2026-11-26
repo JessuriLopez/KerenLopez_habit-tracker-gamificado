@@ -9,9 +9,10 @@ import type {
 
 export { apiClient }
 
-// 1. GET: Obtener todos los hábitos
-export const obtenerHabitosGlobalesAsync = async (): Promise<HabitoGlobal[]> => {
-  const respuesta = await apiClient.get<HabitoGlobal[]>('/habitos')
+const autorizacion = (token: string) => ({ Authorization: `Bearer ${token}` })
+
+export const obtenerHabitosGlobalesAsync = async (token: string, signal: AbortSignal): Promise<HabitoGlobal[]> => {
+  const respuesta = await apiClient.get<HabitoGlobal[]>('/habitos', { headers: autorizacion(token), signal })
 
   if (!Array.isArray(respuesta.data)) {
     throw new Error('La respuesta recibida no es un arreglo JSON vlido.')
@@ -22,14 +23,24 @@ export const obtenerHabitosGlobalesAsync = async (): Promise<HabitoGlobal[]> => 
 
 // 2. POST: Crear un nuevo hábito en PostgreSQL
 export const crearHabitoGlobalAsync = async (
+  token: string,
   nuevoHabito: CrearHabitoGlobalDto
 ): Promise<HabitoGlobal> => {
   const respuesta = await apiClient.post<HabitoGlobal>(
     '/habitos',
-    nuevoHabito
+    nuevoHabito,
+    { headers: autorizacion(token) }
   )
 
   return respuesta.data
+}
+
+export const actualizarHabitoGlobalAsync = async (
+  token: string,
+  id: number,
+  cambios: CrearHabitoGlobalDto
+): Promise<void> => {
+  await apiClient.put(`/habitos/${id}`, cambios, { headers: autorizacion(token) })
 }
 
 // 3. Extraer los errores enviados por .NET
@@ -96,7 +107,8 @@ export const extraerMensajeErrorBackend = (error: unknown): string => {
 }
 
 export const eliminarHabitoGlobalAsync = async (
+  token: string,
   id: number
 ): Promise<void> => {
-  await apiClient.delete(`/habitos/${id}`)
+  await apiClient.delete(`/habitos/${id}`, { headers: autorizacion(token) })
 }

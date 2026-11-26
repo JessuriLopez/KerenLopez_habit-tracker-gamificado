@@ -8,6 +8,9 @@ namespace HabitForge.Infrastructure.Repositories;
 
 public sealed class UsuarioRepository(HabitForgeDbContext context) : IUsuarioRepository
 {
+    public Task<Usuario?> BuscarPorCorreoAsync(string correo, CancellationToken cancellationToken) =>
+        context.Usuarios.AsNoTracking().SingleOrDefaultAsync(usuario => usuario.Correo == correo, cancellationToken);
+
     public async Task<bool> IntentarAgregarAsync(Usuario usuario, CancellationToken cancellationToken)
     {
         context.Usuarios.Add(usuario);

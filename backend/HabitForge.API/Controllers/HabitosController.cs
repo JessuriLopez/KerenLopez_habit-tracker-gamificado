@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using HabitForge.Application.Interfaces;
 using HabitForge.Domain.Entities;
 using HabitForge.Application.Features.Habitos.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HabitForge.API.Controllers;
 
 [ApiController]
+[Authorize(Roles = nameof(RolUsuario.Jugador) + "," + nameof(RolUsuario.GameMaster))]
 [Route("api/[controller]")]
 public class HabitosController : ControllerBase
 {
@@ -58,6 +60,7 @@ public class HabitosController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = nameof(RolUsuario.GameMaster))]
     public async Task<IActionResult> CrearHabito(
         [FromBody] CreateHabitoRequestDto request)
     {
@@ -82,12 +85,13 @@ public class HabitosController : ControllerBase
         };
 
         return CreatedAtAction(
-            nameof(GetHabitos),
+            nameof(GetHabitoById),
             new { id = response.Id },
             response);
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = nameof(RolUsuario.GameMaster))]
     public async Task<IActionResult> ActualizarHabito(
         int id,
         [FromBody] UpdateHabitoRequestDto request)
@@ -114,6 +118,7 @@ public class HabitosController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = nameof(RolUsuario.GameMaster))]
     public async Task<IActionResult> EliminarHabito(int id)
     {
         var habito = await _repository.GetByIdAsync(id);

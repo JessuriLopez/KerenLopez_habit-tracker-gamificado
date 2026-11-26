@@ -2,8 +2,12 @@ using DotNetEnv;
 using HabitForge.Infrastructure;
 using Scalar.AspNetCore;
 using HabitForge.Application;
+using HabitForge.API.Security;
+using HabitForge.Infrastructure.Data;
+using HabitForge.Infrastructure.Security;
 
-var builder = WebApplication.CreateBuilder(args);
+var habilitarGameMaster = args is ["habilitar-gamemaster", _];
+var builder = WebApplication.CreateBuilder(habilitarGameMaster ? [] : args);
 
 Env.Load();
 
@@ -19,6 +23,18 @@ var corsAllowedOrigins = Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGIN
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(connectionString);
 
+if (habilitarGameMaster)
+{
+    await using var comando = builder.Build();
+    await using var scope = comando.Services.CreateAsyncScope();
+    var context = scope.ServiceProvider.GetRequiredService<HabitForgeDbContext>();
+    var actualizado = await HabilitarGameMaster.EjecutarAsync(context, args[1]);
+    Console.WriteLine(actualizado ? "Cuenta GameMaster habilitada." : "No se encontró una cuenta con ese correo.");
+    Environment.ExitCode = actualizado ? 0 : 1;
+    return;
+}
+
+AutenticacionJwt.Agregar(builder.Services);
 builder.Services.AddControllers();
 
 // Genera la documentación OpenAPI
@@ -56,6 +72,8 @@ if (app.Environment.IsDevelopment())
 
 
 app.UseCors("PoliticaCorsHabitForge");
+app.UseAuthentication();
+app.UseAuthorization();
 
 
 app.MapControllers();

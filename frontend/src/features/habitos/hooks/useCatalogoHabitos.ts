@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
-import type { HabitoGlobal } from '../types/habito.types'
+import type { CrearHabitoGlobalDto, HabitoGlobal } from '../types/habito.types'
 import {
+  actualizarHabitoGlobalAsync,
+  crearHabitoGlobalAsync,
   obtenerHabitosGlobalesAsync,
   eliminarHabitoGlobalAsync,
   extraerMensajeErrorBackend,
 } from '../api/habitosApi'
 
-export function useCatalogoHabitos() {
+export function useCatalogoHabitos(token: string) {
   const [habitos, setHabitos] = useState<HabitoGlobal[]>([])
   const [cargando, setCargando] = useState<boolean>(true)
   const [errorRed, setErrorRed] = useState<string | null>(null)
@@ -14,26 +16,30 @@ export function useCatalogoHabitos() {
   const [idEliminando, setIdEliminando] = useState<number | null>(null)
 
   useEffect(() => {
-    obtenerHabitosGlobalesAsync()
+    const solicitud = new AbortController()
+    obtenerHabitosGlobalesAsync(token, solicitud.signal)
       .then((datosDesdePostgres) => {
         setHabitos(datosDesdePostgres)
         setErrorRed(null)
       })
       .catch((error) => {
-        console.error('Error en la petición HTTP:', error)
-        setErrorRed(extraerMensajeErrorBackend(error))
+        if (!solicitud.signal.aborted) setErrorRed(extraerMensajeErrorBackend(error))
       })
       .finally(() => {
-        setCargando(false)
+        if (!solicitud.signal.aborted) setCargando(false)
       })
-  }, [])
+    return () => solicitud.abort()
+  }, [token])
 
-  // Crear hábito y actualizar el catálogo sin recargar
-  const agregarHabitoAlCatalogo = (nuevoHabitoDesdeBD: HabitoGlobal) => {
-    setHabitos((habitosActuales) => [
-      ...habitosActuales,
-      nuevoHabitoDesdeBD,
-    ])
+  const guardarHabito = async (datos: CrearHabitoGlobalDto, id?: number) => {
+    if (id === undefined) {
+      const nuevoHabito = await crearHabitoGlobalAsync(token, datos)
+      setHabitos(actuales => [...actuales, nuevoHabito])
+      return
+    }
+
+    await actualizarHabitoGlobalAsync(token, id, datos)
+    setHabitos(actuales => actuales.map(habito => habito.id === id ? { ...habito, nombre: datos.nombre } : habito))
   }
 
   // Eliminar un hábito mediante DELETE en .NET
@@ -55,14 +61,13 @@ export function useCatalogoHabitos() {
       setIdEliminando(id)
 
       // Esperamos que .NET confirme la eliminación
-      await eliminarHabitoGlobalAsync(id)
+      await eliminarHabitoGlobalAsync(token, id)
 
       // Actualizamos React sin modificar el arreglo original
       setHabitos((habitosActuales) =>
         habitosActuales.filter((item) => item.id !== id)
       )
     } catch (error) {
-      console.error('Error al eliminar el hábito:', error)
       setErrorEliminacion(extraerMensajeErrorBackend(error))
     } finally {
       setIdEliminando(null)
@@ -75,7 +80,7 @@ export function useCatalogoHabitos() {
     errorRed,
     errorEliminacion,
     idEliminando,
-    agregarHabitoAlCatalogo,
+    guardarHabito,
     manejarEliminarHabito,
   }
 }

@@ -8,4 +8,8 @@ public sealed class HashContrasena(IPasswordHasher<Usuario> passwordHasher) : IH
 {
     public string Generar(Usuario usuario, string contrasena) =>
         passwordHasher.HashPassword(usuario, contrasena);
+
+    public bool Verificar(Usuario usuario, string contrasena) =>
+        passwordHasher.VerifyHashedPassword(usuario, usuario.HashContrasena, contrasena)
+        != PasswordVerificationResult.Failed;
 }

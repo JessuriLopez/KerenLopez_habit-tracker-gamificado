@@ -3,38 +3,35 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '../../../components/Button'
-import type { HabitoGlobal } from '../types/habito.types'
-import {
-  crearHabitoGlobalAsync,
-  extraerMensajeErrorBackend,
-} from '../api/habitosApi'
+import { extraerMensajeErrorBackend } from '../api/habitosApi'
 import {
   crearHabitoGlobalSchema,
   type CrearHabitoGlobalSchemaType,
 } from '../schemas/habito.schema'
 
-interface CrearHabitoFormProps {
-  onHabitoCreado: (nuevoHabito: HabitoGlobal) => void
+interface HabitoFormProps {
+  nombreInicial?: string
+  onGuardar: (datos: CrearHabitoGlobalSchemaType) => Promise<void>
   onCancelar: () => void
 }
 
-export function CrearHabitoForm({
-  onHabitoCreado,
+export function HabitoForm({
+  nombreInicial,
+  onGuardar,
   onCancelar,
-}: CrearHabitoFormProps) {
+}: HabitoFormProps) {
   const [errorServidor, setErrorServidor] = useState<string | null>(null)
 
   // Configuración de React Hook Form y Zod
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors, isValid, isSubmitting },
   } = useForm<CrearHabitoGlobalSchemaType>({
     resolver: zodResolver(crearHabitoGlobalSchema),
     mode: 'onChange',
     defaultValues: {
-      nombre: '',
+      nombre: nombreInicial ?? '',
     },
   })
 
@@ -45,14 +42,10 @@ export function CrearHabitoForm({
     try {
       setErrorServidor(null)
 
-      const habitoCreadoEnBd = await crearHabitoGlobalAsync(datosValidados)
-
-      reset()
-      onHabitoCreado(habitoCreadoEnBd)
+      await onGuardar(datosValidados)
     } catch (error) {
       const mensajeExactoDeNet = extraerMensajeErrorBackend(error)
 
-      console.error('Rechazo reportado por el Backend .NET:', error)
       setErrorServidor(mensajeExactoDeNet)
     }
   }
@@ -65,7 +58,7 @@ export function CrearHabitoForm({
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-base font-bold text-white flex items-center gap-2">
           <span className="text-indigo-400">✨</span>
-          Registrar Nuevo Hábito en el Catálogo Global
+          {nombreInicial === undefined ? 'Registrar Nuevo Hábito en el Catálogo Global' : 'Editar Hábito Global'}
         </h2>
 
         <span className="text-xs font-mono text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded border border-emerald-500/30">

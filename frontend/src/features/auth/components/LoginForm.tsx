@@ -1,24 +1,40 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { isAxiosError } from 'axios'
 import { useForm } from 'react-hook-form'
 import { Button } from '../../../components/Button'
+import { iniciarSesionAsync } from '../api/authApi'
 import { loginSchema, type LoginSchemaType } from '../schemas/login.schema'
+import type { Sesion } from '../types/sesion.types'
 import { CampoAuth } from './CampoAuth'
 
 interface LoginFormProps {
-  onVolver: () => void
+  onAutenticado: (sesion: Sesion) => void
   onAbrirRegistro: () => void
   registroCompletado: boolean
 }
 
-export function LoginForm({ onVolver, onAbrirRegistro, registroCompletado }: LoginFormProps) {
+export function LoginForm({ onAutenticado, onAbrirRegistro, registroCompletado }: LoginFormProps) {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitSuccessful },
+    setError,
+    formState: { errors, isSubmitting },
   } = useForm<LoginSchemaType>({
     resolver: zodResolver(loginSchema),
     defaultValues: { correo: '', contrasena: '' },
   })
+
+  const enviar = async (datos: LoginSchemaType) => {
+    try {
+      onAutenticado(await iniciarSesionAsync(datos))
+    } catch (error) {
+      setError('root.servidor', {
+        message: isAxiosError(error) && error.response?.status === 401
+          ? 'El correo o la contraseña son incorrectos.'
+          : 'No se pudo iniciar sesión. Vuelva a intentarlo.',
+      })
+    }
+  }
 
   return (
     <section className="mx-auto max-w-md rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-lg">
@@ -26,14 +42,11 @@ export function LoginForm({ onVolver, onAbrirRegistro, registroCompletado }: Log
       {registroCompletado && (
         <p className="mt-2 text-sm text-emerald-400" role="status">Su cuenta de Jugador se creó correctamente.</p>
       )}
-      <p className="mt-2 text-sm text-slate-300">
-        La conexión con el servidor está pendiente. Por ahora, el formulario solo valida los campos.
-      </p>
 
       <form
         className="mt-6 space-y-4"
         noValidate
-        onSubmit={handleSubmit(() => {})}
+        onSubmit={handleSubmit(enviar)}
       >
         <CampoAuth
           id="login-correo"
@@ -53,20 +66,17 @@ export function LoginForm({ onVolver, onAbrirRegistro, registroCompletado }: Log
           error={errors.contrasena?.message}
         />
 
-        {isSubmitSuccessful && (
-          <p className="text-sm text-amber-400" role="status">
-            Inicio de sesión pendiente de conexión con el servidor. No se enviaron los datos.
+        {errors.root?.servidor && (
+          <p className="text-sm text-amber-400" role="alert">
+            {errors.root.servidor.message}
           </p>
         )}
 
         <div className="flex flex-wrap gap-2">
-          <Button type="submit" className="bg-indigo-600 px-4 text-white hover:bg-indigo-500">
-            Iniciar sesión
+          <Button type="submit" disabled={isSubmitting} className="bg-indigo-600 px-4 text-white hover:bg-indigo-500 disabled:opacity-50">
+            {isSubmitting ? 'Iniciando sesión…' : 'Iniciar sesión'}
           </Button>
-          <Button onClick={onVolver} className="bg-slate-700 px-4 text-slate-200 hover:bg-slate-600">
-            Volver al catálogo
-          </Button>
-          <Button onClick={onAbrirRegistro} className="px-4 text-indigo-300 hover:bg-slate-700">
+          <Button onClick={onAbrirRegistro} disabled={isSubmitting} className="px-4 text-indigo-300 hover:bg-slate-700">
             Crear cuenta
           </Button>
         </div>

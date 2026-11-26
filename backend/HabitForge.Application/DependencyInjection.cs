@@ -1,4 +1,5 @@
 using FluentValidation;
+using HabitForge.Application.Features.Auth.Login;
 using HabitForge.Application.Features.Auth.Registro;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +11,7 @@ public static class DependencyInjection
     {
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
         services.AddScoped<RegistrarUsuario>();
+        services.AddScoped<IniciarSesion>();
 
         return services;
     }

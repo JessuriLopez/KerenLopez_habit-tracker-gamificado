@@ -1,14 +1,17 @@
 
 import type { HabitoGlobal } from '../types/habito.types'
+import { Button } from '../../../components/Button'
 
 interface HabitoGlobalCardProps extends HabitoGlobal {
-  onEliminar: (id: number) => void
+  onEditar?: () => void
+  onEliminar?: (id: number) => void
   eliminando?: boolean
 }
 
 export function HabitoGlobalCard({
   id,
   nombre,
+  onEditar,
   onEliminar,
   eliminando = false,
 }: HabitoGlobalCardProps) {
@@ -31,23 +34,18 @@ export function HabitoGlobalCard({
         </h3>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <button
-          disabled
-          className="w-full bg-slate-900/80 text-slate-400 text-sm font-medium py-2.5 px-4 rounded-lg cursor-not-allowed border border-slate-700"
-        >
-          🔒 Adoptar Hábito (Requiere Sesión)
-        </button>
-
-        <button
-          type="button"
+      {onEditar && onEliminar && <div className="flex flex-col gap-2">
+        <Button onClick={onEditar} disabled={eliminando} className="w-full bg-slate-700 px-4 text-white hover:bg-slate-600 disabled:opacity-50">
+          Editar Hábito
+        </Button>
+        <Button
           onClick={() => onEliminar(id)}
           disabled={eliminando}
-          className="w-full bg-red-950/40 hover:bg-red-900/60 text-red-400 hover:text-red-300 text-sm font-medium py-2.5 px-4 rounded-lg border border-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-red-950/40 hover:bg-red-900/60 text-red-400 hover:text-red-300 px-4 border border-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {eliminando ? '⏳ Eliminando...' : '🗑️ Eliminar Hábito'}
-        </button>
-      </div>
+        </Button>
+      </div>}
 
     </article>
   )

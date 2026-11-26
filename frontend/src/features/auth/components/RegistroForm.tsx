@@ -8,11 +8,10 @@ import { CampoAuth } from './CampoAuth'
 
 interface RegistroFormProps {
   onIrAlLogin: () => void
-  onVolver: () => void
   onRegistrado: () => void
 }
 
-export function RegistroForm({ onIrAlLogin, onVolver, onRegistrado }: RegistroFormProps) {
+export function RegistroForm({ onIrAlLogin, onRegistrado }: RegistroFormProps) {
   const {
     register,
     handleSubmit,
@@ -86,9 +85,6 @@ export function RegistroForm({ onIrAlLogin, onVolver, onRegistrado }: RegistroFo
           </Button>
           <Button onClick={onIrAlLogin} disabled={isSubmitting} className="bg-slate-700 px-4 text-slate-200 hover:bg-slate-600">
             Ir al inicio de sesión
-          </Button>
-          <Button onClick={onVolver} disabled={isSubmitting} className="px-4 text-slate-200 hover:bg-slate-700">
-            Volver al catálogo
           </Button>
         </div>
       </form>
